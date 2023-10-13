@@ -9,7 +9,7 @@ pub type QueryBuilder<'q> = sqlx::query_builder::QueryBuilder<'q, sqlx::Postgres
 pub type Error = sqlx::Error;
 //pub type Result<T> = Result<T, &'static str>;
 
-// 类据类型
+/// 可用数据类型
 #[derive(Debug, Clone, PartialEq)]
 pub enum Val {
     I8(i8),
@@ -27,6 +27,7 @@ pub enum Val {
     S(&'static str),
 }
 
+// 自动继承数据类型
 macro_rules! impl_from_val {
     ($($type:ident => $enum_type: ident),+) => {
         $(
