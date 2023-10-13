@@ -1,8 +1,8 @@
 use crate::consts;
-use crate::types::pg::{Pool, PoolOptions};
+use crate::types::{Db, PoolOptions};
 
 /// 得到数据库连接池 - 通过连接字符串
-pub async fn get_pool(conn_string: &str) -> Pool {
+pub async fn get(conn_string: &str) -> Db {
     match PoolOptions::new()
         .max_connections(consts::PG_MAX_CONNECTIONS)
         .connect(&conn_string)

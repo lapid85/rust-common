@@ -33,7 +33,7 @@ pub async fn create_tables(pool: &Pool) {
     let Ok(mut current_dir) = std::env::current_dir() else {
         panic!("无法获取当前目录")
     };
-    current_dir.push("src/tables");
+    current_dir.push("src/models");
 
     // 如果不存在, 则创建目录
     if !current_dir.exists() {

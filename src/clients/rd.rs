@@ -1,7 +1,7 @@
-use crate::types::rd::{Client, ClusterClient};
+use crate::types::{Rd, ClusterRd};
 
 /// 得到系统平台 redis client
-pub async fn get(conn_string: &str) -> Client {
+pub async fn get(conn_string: &str) -> Rd {
     match Client::open(conn_string) {
         Ok(client) => client,
         Err(e) => {
@@ -11,6 +11,6 @@ pub async fn get(conn_string: &str) -> Client {
 }
 
 /// 得到平台 redis cluster client
-pub async fn get_cluster(nodes: Vec<String>) -> ClusterClient {
+pub async fn get_cluster(nodes: Vec<String>) -> ClusterRd {
     ClusterClient::new(nodes).unwrap()
 }
