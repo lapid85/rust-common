@@ -39,7 +39,7 @@ pub mod tests {
     #[tokio::test]
     async fn test_list_tables() {
         // 建立数据库连接池
-        let pool = crate::clients::pg::get_pool(DATABASE_URL).await;
+        let pool = crate::clients::pg::get(DATABASE_URL).await;
         // 调用 list_tables 函数获取表列表
         let tables = list_tables(&pool).await;
         // 检查结果是否为空
@@ -51,7 +51,7 @@ pub mod tests {
     #[tokio::test]
     async fn test_list_fields() {
         // 建立数据库连接池
-        let pool = crate::clients::pg::get_pool(DATABASE_URL).await;
+        let pool = crate::clients::pg::get(DATABASE_URL).await;
         // 替换以下表名为实际存在的表名
         let table_name = "admins";
         // 调用 list_fields 函数获取表字段列表
