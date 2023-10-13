@@ -4,7 +4,7 @@ use crate::utils::strings;
 use std::fs;
 
 /// 获取结构体字段类型
-pub fn get_struct_field_type(field_type: &str) -> &'static str {
+pub fn get_struct_field_type(table_name: &String, field_type: &str) -> &'static str {
     match field_type {
         "smallint" => "i16",
         "integer" => "i32",
@@ -19,7 +19,7 @@ pub fn get_struct_field_type(field_type: &str) -> &'static str {
             } else if v.contains("timestamp with time zone") {
                 "chrono::DateTime<chrono::Utc>"
             } else {
-                panic!("未知类型: {}", v);
+                panic!("未知类型: {} - {}", table_name, v);
             }
         }
     }
@@ -63,7 +63,7 @@ pub async fn create_tables(pool: &Pool) {
 
         let fields = table_info::list_fields(pool, &table.name).await;
         for field in fields {
-            let field_type = get_struct_field_type(field.field_type.as_str());
+            let field_type = get_struct_field_type(&table.name, field.field_type.as_str());
             let field_name = field.field_name.to_lowercase();
             struct_str.push_str(&format!("    pub {}: {},\n", field_name, field_type));
         }

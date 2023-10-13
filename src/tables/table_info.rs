@@ -19,13 +19,13 @@ pub struct Field {
 
 /// List tables in the database
 pub async fn list_tables(pool: &Pool) -> Vec<Table> {
-    let sql = "SELECT distinct(table_name) as name from pg_list_tables";
+    let sql = "SELECT distinct(table_name) as name from all_tables";
     sqlx::query_as(sql).fetch_all(pool).await.unwrap()
 }
 
 /// List fields of a table
 pub async fn list_fields(pool: &Pool, table_name: &str) -> Vec<Field> {
-    let sql = format!("SELECT table_name, field_name, field_type, not_null, has_default, comment FROM pg_list_tables WHERE table_name = '{}'", table_name);
+    let sql = format!("SELECT table_name, field_name, field_type, not_null, has_default, comment FROM all_tables WHERE table_name = '{}'", table_name);
     sqlx::query_as(&sql).fetch_all(pool).await.unwrap()
 }
 
@@ -34,7 +34,7 @@ pub mod tests {
     use super::*;
 
     // 注意：在运行测试前，请确保有一个有效的 PostgreSQL 数据库连接池，并替换以下数据库连接信息
-    const DATABASE_URL: &str = "postgres://ai:qwe123QWE@localhost:5432/im_platform";
+    const DATABASE_URL: &str = "postgres://postgres:qwe123QWE@localhost:5432/promotion_platform";
 
     #[tokio::test]
     async fn test_list_tables() {
