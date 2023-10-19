@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate lazy_static;
+
 pub mod clients;
 pub mod config;
 pub mod consts;
