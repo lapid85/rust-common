@@ -29,3 +29,4 @@ reqwest = { version = "0.11", features = ["json"] }
 base64 = "0.21"
 serde_cbor = "0.11"
 Inflector = "0.11"
+rust-i18n = "2.2"
