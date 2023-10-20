@@ -4,12 +4,14 @@ pub struct Cond {
     page_size: Option<usize>, // 存储 LIMIT 条件
     page_offset: Option<usize>,  // 存储分页条件
     order_sort: Option<String>, // 存储 ORDER BY 子句
+    args: Vec<String>, // 存储参数
 }
 
 impl Cond {
     pub fn new() -> Self {
         Cond {
-            conditions: vec![], // 存储 AND 条件
+            conditions: vec!["1 = 1".to_owned()], // 存储 AND 条件
+            args : vec![], // 存储参数
             or_conditions: vec![], // 存储 OR 条件
             page_size: None, // 存储 LIMIT 条件
             page_offset: None,  // 存储分页条件
@@ -17,79 +19,102 @@ impl Cond {
         }
     }
 
-    fn where_clause(&mut self, condition: &str) -> &mut Self {
-        self.conditions.push(condition.to_string());
-        self
-    }
-
+    /// 用于构建 WHERE 子句
     pub fn and(&mut self, condition: &str) -> &mut Self {
         self.conditions.push(condition.to_string());
         self
     }
 
+    /// 用于构建 WHERE 子句
     pub fn or(&mut self, condition: &str) -> &mut Self {
         self.or_conditions.push(condition.to_string());
         self
     }
 
-    pub fn eq(&mut self, column: &str, value: &str) -> &mut Self {
-        let condition = format!("{} = '{}'", column, value);
-        self.where_clause(&condition)
+    /// 用于 = 查询
+    pub fn eq<T: ToString>(&mut self, column: &str, value: &T) -> &mut Self {
+        let condition = format!("{} = ?", column);
+        self.conditions.push(condition);
+        self.args.push(value.to_string());
+        self
     }
 
-    pub fn ge(&mut self, column: &str, value: &str) -> &mut Self {
-        let condition = format!("{} >= '{}'", column, value);
-        self.where_clause(&condition)
+    /// 用于 >= 查询
+    pub fn ge<T: ToString>(&mut self, column: &str, value: &T) -> &mut Self {
+        let condition = format!("{} >= ?", column);
+        self.conditions.push(condition);
+        self.args.push(value.to_string());
+        self
     }
 
-    pub fn le(&mut self, column: &str, value: &str) -> &mut Self {
-        let condition = format!("{} <= '{}'", column, value);
-        self.where_clause(&condition)
+    /// 用于 <= 查询
+    pub fn le<T: ToString>(&mut self, column: &str, value: &T) -> &mut Self {
+        let condition = format!("{} <= ?", column);
+        self.conditions.push(condition);
+        self.args.push(value.to_string());
+        self
     }
 
-    pub fn gt(&mut self, column: &str, value: &str) -> &mut Self {
-        let condition = format!("{} > '{}'", column, value);
-        self.where_clause(&condition)
+    /// 用于 > 查询
+    pub fn gt<T: ToString>(&mut self, column: &str, value: &T) -> &mut Self {
+        let condition = format!("{} > ?", column);
+        self.conditions.push(condition);
+        self.args.push(value.to_string());
+        self
     }
 
-    pub fn lt(&mut self, column: &str, value: &str) -> &mut Self {
-        let condition = format!("{} < '{}'", column, value);
-        self.where_clause(&condition)
+    /// 用于 < 查询
+    pub fn lt<T: ToString>(&mut self, column: &str, value: &T) -> &mut Self {
+        let condition = format!("{} < ?", column);
+        self.conditions.push(condition);
+        self.args.push(value.to_string());
+        self
     }
 
-    pub fn between(&mut self, column: &str, min: &str, max: &str) -> &mut Self {
-        let condition = format!("{} BETWEEN '{}' AND '{}'", column, min, max);
-        self.where_clause(&condition)
+    /// 用于 BETWEEN 查询
+    pub fn between<T: ToString>(&mut self, column: &str, min: &T, max: &T) -> &mut Self {
+        let condition = format!("{} BETWEEN ? AND ?", column);
+        self.conditions.push(condition);
+        self.args.push(min.to_string());
+        self.args.push(max.to_string());
+        self
     }
 
-    pub fn like(&mut self, column: &str, pattern: &str) -> &mut Self {
-        let condition = format!("{} LIKE '{}'", column, pattern);
-        self.where_clause(&condition)
+    /// 用于模糊查询
+    pub fn like<T: ToString>(&mut self, column: &str, pattern: &T) -> &mut Self {
+        let condition = format!("{} LIKE ?", column);
+        self.conditions.push(condition);
+        self.args.push(pattern.to_string());
+        self
     }
 
+    /// 用于 limit 查询
     pub fn limit(&mut self, limit: usize) -> &mut Self {
         self.page_size = Some(limit);
         self
     }
 
+    /// 用于 order by 查询
     pub fn order_by(&mut self, column: &str, ascending: bool) -> &mut Self {
         let order = if ascending { "ASC" } else { "DESC" };
         self.order_sort = Some(format!("ORDER BY {} {}", column, order));
         self
     }
 
+    /// 用于分页查询
     pub fn page(&mut self, page: usize) -> &mut Self {
         self.page_offset = Some(page);
         self
     }
 
+    /// 用于构建查询语句
     pub fn build(&self) -> String {
         let mut query = String::new();
         let has_and = !self.conditions.is_empty();
         let has_or = !self.or_conditions.is_empty();
-        if has_and || has_or {
-            query.push_str("WHERE ");
-        }
+        // if has_and || has_or {
+        //     query.push_str("WHERE ");
+        // }
         if has_and {
             query.push_str(&self.conditions.join(" AND "));
         }
@@ -119,7 +144,7 @@ mod tests {
     #[test]
     fn test_build_or() {
         let query = Cond::new()
-            .where_clause("age >= 18")
+            .and("age >= 18")
             .or("city = 'New York'")
             .or("city = 'London'")
             .build();

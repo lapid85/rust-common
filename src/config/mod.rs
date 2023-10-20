@@ -50,7 +50,7 @@ pub struct Config {
 }
 
 /// 设置配置内容
-pub async fn load_configs(conn_string: &str) {
+pub async fn load_all(conn_string: &str) {
 
     let db = clients::pg::get(conn_string).await;
     let platforms: Vec<Platform> = sqlx::query_as("select id, name from platforms").fetch_all(&db).await.unwrap();

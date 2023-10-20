@@ -9,6 +9,7 @@ pub mod response;
 pub mod tables;
 pub mod types;
 pub mod utils;
+pub mod request;
 
 #[cfg(test)]
 mod tests {
