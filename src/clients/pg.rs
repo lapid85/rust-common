@@ -36,3 +36,9 @@ pub async fn get_by_site(site: &str) -> Db {
     (*servers).insert(site.to_owned(), server.clone());
     server
 }
+
+/// 得到数据库连接池 - 通过请求
+pub async fn get_by_request(req: &actix_web::HttpRequest) -> Db {
+    let site = crate::request::get_site_code(req);
+    get_by_site(&site).await
+}
