@@ -20,3 +20,11 @@ pub type Rd = rd::Client;
 
 /// redis cluster client
 pub type ClusterRd = rd::ClusterClient;
+
+pub mod pager;
+pub mod pagination;
+pub mod search;
+
+pub use pagination::Pagination;
+pub use search::Search;
+pub use pager::Pager;

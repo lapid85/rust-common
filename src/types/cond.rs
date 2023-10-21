@@ -1,10 +1,12 @@
+use super::Val;
+
 pub struct Cond {
     conditions: Vec<String>, // 存储 AND 条件
     or_conditions: Vec<String>, // 存储 OR 条件
-    page_size: Option<usize>, // 存储 LIMIT 条件
-    page_offset: Option<usize>,  // 存储分页条件
+    page_size: Option<i32>, // 存储 LIMIT 条件
+    page_offset: Option<i32>,  // 存储分页条件
     order_sort: Option<String>, // 存储 ORDER BY 子句
-    args: Vec<String>, // 存储参数
+    pub args: Vec<Val>, // 存储参数
 }
 
 impl Cond {
@@ -32,64 +34,64 @@ impl Cond {
     }
 
     /// 用于 = 查询
-    pub fn eq<T: ToString>(&mut self, column: &str, value: &T) -> &mut Self {
+    pub fn eq(&mut self, column: &str, value: &Val) -> &mut Self {
         let condition = format!("{} = ?", column);
         self.conditions.push(condition);
-        self.args.push(value.to_string());
+        self.args.push(value.clone());
         self
     }
 
     /// 用于 >= 查询
-    pub fn ge<T: ToString>(&mut self, column: &str, value: &T) -> &mut Self {
+    pub fn ge(&mut self, column: &str, value: &Val) -> &mut Self {
         let condition = format!("{} >= ?", column);
         self.conditions.push(condition);
-        self.args.push(value.to_string());
+        self.args.push(value.clone());
         self
     }
 
     /// 用于 <= 查询
-    pub fn le<T: ToString>(&mut self, column: &str, value: &T) -> &mut Self {
+    pub fn le(&mut self, column: &str, value: &Val) -> &mut Self {
         let condition = format!("{} <= ?", column);
         self.conditions.push(condition);
-        self.args.push(value.to_string());
+        self.args.push(value.clone());
         self
     }
 
     /// 用于 > 查询
-    pub fn gt<T: ToString>(&mut self, column: &str, value: &T) -> &mut Self {
+    pub fn gt(&mut self, column: &str, value: &Val) -> &mut Self {
         let condition = format!("{} > ?", column);
         self.conditions.push(condition);
-        self.args.push(value.to_string());
+        self.args.push(value.clone());
         self
     }
 
     /// 用于 < 查询
-    pub fn lt<T: ToString>(&mut self, column: &str, value: &T) -> &mut Self {
+    pub fn lt(&mut self, column: &str, value: &Val) -> &mut Self {
         let condition = format!("{} < ?", column);
         self.conditions.push(condition);
-        self.args.push(value.to_string());
+        self.args.push(value.clone());
         self
     }
 
     /// 用于 BETWEEN 查询
-    pub fn between<T: ToString>(&mut self, column: &str, min: &T, max: &T) -> &mut Self {
+    pub fn between(&mut self, column: &str, min: &Val, max: &Val) -> &mut Self {
         let condition = format!("{} BETWEEN ? AND ?", column);
         self.conditions.push(condition);
-        self.args.push(min.to_string());
-        self.args.push(max.to_string());
+        self.args.push(min.clone());
+        self.args.push(max.clone());
         self
     }
 
     /// 用于模糊查询
-    pub fn like<T: ToString>(&mut self, column: &str, pattern: &T) -> &mut Self {
+    pub fn like(&mut self, column: &str, pattern: &Val) -> &mut Self {
         let condition = format!("{} LIKE ?", column);
         self.conditions.push(condition);
-        self.args.push(pattern.to_string());
+        self.args.push(pattern.clone());
         self
     }
 
     /// 用于 limit 查询
-    pub fn limit(&mut self, limit: usize) -> &mut Self {
+    pub fn limit(&mut self, limit: i32) -> &mut Self {
         self.page_size = Some(limit);
         self
     }
@@ -102,7 +104,7 @@ impl Cond {
     }
 
     /// 用于分页查询
-    pub fn page(&mut self, page: usize) -> &mut Self {
+    pub fn page(&mut self, page: i32) -> &mut Self {
         self.page_offset = Some(page);
         self
     }
