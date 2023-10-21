@@ -8,7 +8,6 @@ lazy_static! {
     pub static ref SERVERS: Arc<Mutex<HashMap<String, Db>>> = Arc::new(Mutex::new(HashMap::new()));
 }
 
-
 /// 得到数据库连接池 - 通过连接字符串
 pub async fn get(conn_string: &str) -> Db {
     match PoolOptions::new()
@@ -21,6 +20,13 @@ pub async fn get(conn_string: &str) -> Db {
             panic!("连接数据库失败 {:?}, conn string: '{}'", err, conn_string);
         }
     }
+}
+
+/// 设置数据库连接池 - 通过站点
+pub async fn set(site: &str, conn_string: &str) {
+    let mut servers = SERVERS.lock().unwrap();
+    let server = get(conn_string).await;
+    (*servers).insert(site.to_owned(), server.clone());
 }
 
 /// 得到数据库连接池 - 通过站点

@@ -1,4 +1,5 @@
 use actix_web::HttpRequest;
+use crate::consts::PLATFORM_SYSTEM;
 
 /// 获取 GET 请求结果
 pub async fn get(url: &str) -> Result<String, &'static str> {
@@ -62,7 +63,15 @@ pub async fn delete(url: &str, body: &str) -> Result<String, &'static str> {
 /// 获取站点代码
 pub fn get_site_code(req: &HttpRequest) -> String {
     let headers = req.headers();
-    let site = headers.get("site").unwrap();
-    let site = site.to_str().unwrap();
-    site.to_string()
+    if let Some(site) = headers.get("site") {
+        let site = site.to_str().unwrap();
+        return site.to_string();
+    }
+
+    let path = req.path();
+    if path.contains("/plat/") { // 如果包含 /plat/ 则为平台
+        return PLATFORM_SYSTEM.to_string();
+    }
+
+    "".to_owned()
 }

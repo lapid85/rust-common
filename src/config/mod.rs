@@ -3,6 +3,7 @@ use crate::clients;
 use sqlx::FromRow;
 use std::collections::HashMap;
 use std::sync::{Mutex, Arc};
+use crate::consts::PLATFORM_SYSTEM;
 
 /// 获得配置内容
 pub mod env;
@@ -25,26 +26,26 @@ pub fn load_env() {
 
 #[derive(Debug, FromRow)]
 pub struct Platform {
-    pub id: i64,
+    pub id: i32,
     pub name: String,
 }
 
 #[derive(Debug, FromRow)]
 pub struct Site {
-    pub id: i64,
+    pub id: i32,
     pub name: String,
-    pub platform_id: i64,
+    pub platform_id: i32,
     pub platform_name: String,
     pub code: String,
 }
 
 #[derive(Debug, FromRow)]
 pub struct Config {
-    pub id: i64,
+    pub id: i32,
     pub name: String,
-    pub platform_id: i64,
+    pub platform_id: i32,
     pub platform_name: String,
-    pub site_id: i64,
+    pub site_id: i32,
     pub site_name: String,
     pub value: String,
 }
@@ -63,6 +64,10 @@ pub async fn load_all(conn_string: &str) {
     let mut site_names = SITE_NAMES.lock().unwrap();
     let mut site_platforms = SITE_PLATFORMS.lock().unwrap();
     let mut site_up_urls = SITE_UP_URLS.lock().unwrap();
+
+    // 设置默认的数据库连接字符串
+    site_pgsql_strings.insert(PLATFORM_SYSTEM.to_owned(), conn_string.to_owned());
+
 
     for platform in platforms {
         let sites: Vec<Site> = sqlx::query_as("select id, name, platform_id, platform_name, code from sites where platform_id = $1")

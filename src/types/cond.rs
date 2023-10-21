@@ -1,91 +1,102 @@
 use super::Val;
 
 pub struct Cond {
-    conditions: Vec<String>, // 存储 AND 条件
-    or_conditions: Vec<String>, // 存储 OR 条件
+    fields: Vec<String>, // 存储 AND 条件
+    operators: Vec<String>, // 存储操作符
     page_size: Option<i32>, // 存储 LIMIT 条件
     page_offset: Option<i32>,  // 存储分页条件
     order_sort: Option<String>, // 存储 ORDER BY 子句
     pub args: Vec<Val>, // 存储参数
+    arg_count: i32, // 存储参数个数
 }
 
 impl Cond {
     pub fn new() -> Self {
         Cond {
-            conditions: vec!["1 = 1".to_owned()], // 存储 AND 条件
+            fields: vec![], // 存储 AND 条件
+            operators: vec![], // 存储操作符
             args : vec![], // 存储参数
-            or_conditions: vec![], // 存储 OR 条件
             page_size: None, // 存储 LIMIT 条件
             page_offset: None,  // 存储分页条件
             order_sort: None, // 存储 ORDER BY 子句
+            arg_count: 0, // 存储参数个数
         }
     }
 
     /// 用于构建 WHERE 子句
     pub fn and(&mut self, condition: &str) -> &mut Self {
-        self.conditions.push(condition.to_string());
+        self.fields.push(condition.to_string());
         self
     }
 
     /// 用于构建 WHERE 子句
     pub fn or(&mut self, condition: &str) -> &mut Self {
-        self.or_conditions.push(condition.to_string());
+        self.fields.push(condition.to_string());
         self
     }
 
     /// 用于 = 查询
     pub fn eq(&mut self, column: &str, value: &Val) -> &mut Self {
-        let condition = format!("{} = ?", column);
-        self.conditions.push(condition);
+        self.arg_count += 1 ;
+        self.fields.push(column.to_owned());
+        self.operators.push("=".to_owned());
         self.args.push(value.clone());
         self
     }
 
     /// 用于 >= 查询
     pub fn ge(&mut self, column: &str, value: &Val) -> &mut Self {
-        let condition = format!("{} >= ?", column);
-        self.conditions.push(condition);
+        self.arg_count += 1 ;
+        self.fields.push(column.to_owned());
+        self.operators.push(">=".to_owned());
         self.args.push(value.clone());
         self
     }
 
     /// 用于 <= 查询
     pub fn le(&mut self, column: &str, value: &Val) -> &mut Self {
-        let condition = format!("{} <= ?", column);
-        self.conditions.push(condition);
+        self.arg_count += 1 ;
+        self.fields.push(column.to_owned());
+        self.operators.push("<=".to_owned());
         self.args.push(value.clone());
         self
     }
 
     /// 用于 > 查询
     pub fn gt(&mut self, column: &str, value: &Val) -> &mut Self {
-        let condition = format!("{} > ?", column);
-        self.conditions.push(condition);
+        self.arg_count += 1 ;
+        self.fields.push(column.to_owned());
+        self.operators.push(">".to_owned());
         self.args.push(value.clone());
         self
     }
 
     /// 用于 < 查询
     pub fn lt(&mut self, column: &str, value: &Val) -> &mut Self {
-        let condition = format!("{} < ?", column);
-        self.conditions.push(condition);
+        self.arg_count += 1 ;
+        self.fields.push(column.to_owned());
+        self.operators.push("<".to_owned());
         self.args.push(value.clone());
         self
     }
 
     /// 用于 BETWEEN 查询
     pub fn between(&mut self, column: &str, min: &Val, max: &Val) -> &mut Self {
-        let condition = format!("{} BETWEEN ? AND ?", column);
-        self.conditions.push(condition);
+        self.arg_count += 2 ;
+        self.fields.push(column.to_owned());
+        self.operators.push(">".to_owned());
         self.args.push(min.clone());
+        self.fields.push(column.to_owned());
+        self.operators.push("<".to_owned());
         self.args.push(max.clone());
         self
     }
 
     /// 用于模糊查询
     pub fn like(&mut self, column: &str, pattern: &Val) -> &mut Self {
-        let condition = format!("{} LIKE ?", column);
-        self.conditions.push(condition);
+        self.arg_count += 1 ;
+        self.fields.push(column.to_owned());
+        self.operators.push("LIKE".to_owned());
         self.args.push(pattern.clone());
         self
     }
@@ -112,18 +123,14 @@ impl Cond {
     /// 用于构建查询语句
     pub fn build(&self) -> String {
         let mut query = String::new();
-        let has_and = !self.conditions.is_empty();
-        let has_or = !self.or_conditions.is_empty();
-        // if has_and || has_or {
-        //     query.push_str("WHERE ");
-        // }
+        let has_and = self.fields.len() > 0;
+        println!("has_and: {}, fields: {:?}, operators: {:?}, args: {:?}", has_and, self.fields, self.operators, self.args);
         if has_and {
-            query.push_str(&self.conditions.join(" AND "));
-        }
-        if has_or {
-            query.push_str(" AND (");
-            query.push_str(&self.or_conditions.join(" OR "));
-            query.push_str(")");
+            for (i, field) in self.fields.iter().enumerate() {
+                let operator = &self.operators[i as usize];
+                let sql = format!("{} {} ${}", field, operator, i + 1);
+                query.push_str(&sql);
+            }
         }
         if let Some(order_by) = &self.order_sort {
             query.push_str(&format!(" {}", order_by));
