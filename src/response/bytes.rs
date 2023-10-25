@@ -5,7 +5,7 @@ use super::{JsonOK, JsonOKMsg, JsonError, JsonResult};
 
 /// 处理转换 cbor
 #[inline]
-fn cbor_response<T: ser::Serialize>(data: &T) -> HttpResponse {
+pub fn cbor_response<T: ser::Serialize>(data: &T) -> HttpResponse {
     let encode = to_vec(data);
     HttpResponse::Ok()
         //.append_header(("Content-Disposition", "inline"))
