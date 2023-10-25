@@ -9,6 +9,12 @@ pub use cond::Cond;
 /// 值
 pub type Val = pg::Val;
 
+/// 状态：启用
+pub const STATUS_ENABLE: Val = Val::I16(crate::consts::STATUS_DISABLE);
+/// 状态：禁用
+pub const STATUS_DISABLE: Val = Val::I16(crate::consts::STATUS_DISABLE);
+
+
 /// 数据库连接池
 pub type Db = pg::Pool;
 

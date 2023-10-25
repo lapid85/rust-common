@@ -18,6 +18,10 @@ pub fn get_struct_field_type(table_name: &String, field_type: &str) -> &'static 
                 "chrono::NaiveDateTime"
             } else if v.contains("timestamp with time zone") {
                 "chrono::DateTime<chrono::Utc>"
+            } else if v.contains("decimal") { 
+                "f64"
+            } else if v.contains("numeric") { 
+                "f64"
             } else {
                 panic!("未知类型: {} - {}", table_name, v);
             }
@@ -65,7 +69,8 @@ pub async fn create_tables(pool: &Pool) {
         for field in fields {
             let field_type = get_struct_field_type(&table.name, field.field_type.as_str());
             let field_name = field.field_name.to_lowercase();
-            struct_str.push_str(&format!("    pub {}: {},\n", field_name, field_type));
+            let field_comment = field.comment.unwrap_or("".to_string());
+            struct_str.push_str(&format!("    pub {}: {}, // {} - {}\n", field_name, field_type, field_comment, field.field_type));
         }
         struct_str.push_str("}\n");
         structs.push_str(&format!("pub mod {};\n", table.name));
