@@ -4,6 +4,7 @@ use sqlx::FromRow;
 use std::collections::HashMap;
 use std::sync::{Mutex, Arc};
 use crate::consts::PLATFORM_SYSTEM;
+use log::info;
 
 /// 获得配置内容
 pub mod env;
@@ -104,12 +105,12 @@ pub async fn load_all(conn_string: &str) {
         }
     }
 
-    println!("site_platforms = {:?}", site_platforms);
-    println!("site_pgsql_strings = {:?}", site_pgsql_strings);
-    println!("site_redis_strings = {:?}", site_redis_strings);
-    println!("site_redis_cluster = {:?}", site_redis_cluster);
-    println!("site_kafka_strings = {:?}", site_kafka_strings);
-    println!("site_static_urls = {:?}", site_static_urls);
-    println!("site_up_urls = {:?}", site_up_urls);
-    println!("site_names = {:?}", site_names);
+    info!("site_platforms = {:?}", site_platforms);
+    info!("site_pgsql_strings = {:?}", site_pgsql_strings);
+    info!("site_redis_strings = {:?}", site_redis_strings);
+    info!("site_redis_cluster = {:?}", site_redis_cluster);
+    info!("site_kafka_strings = {:?}", site_kafka_strings);
+    info!("site_static_urls = {:?}", site_static_urls);
+    info!("site_up_urls = {:?}", site_up_urls);
+    info!("site_names = {:?}", site_names);
 }

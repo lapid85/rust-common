@@ -11,6 +11,7 @@ pub mod tables;
 pub mod types;
 pub mod utils;
 pub mod request;
+pub mod logger;
 #[macro_use]
 pub mod i18n;
 
