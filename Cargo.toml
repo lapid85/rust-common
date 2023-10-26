@@ -9,7 +9,7 @@ response_json = []
 response_cbor = []
 
 [dependencies]
-sqlx = { version = "0.7", features = [ "runtime-tokio-native-tls", "postgres", "macros", "rust_decimal" ] }
+sqlx = { version = "0.7", features = [ "runtime-tokio-native-tls", "postgres", "macros", "rust_decimal", "chrono" ] }
 dotenv = "0.15"
 redis = { version = "0.23", features = [ "r2d2", "ahash", "cluster-async", "tokio-comp", "connection-manager" ] }
 #futures = { version = "0.3" }

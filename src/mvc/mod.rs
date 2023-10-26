@@ -11,6 +11,7 @@ pub fn get_struct_field_type(table_name: &String, field_type: &str) -> &'static 
         "bigint" => "i64",
         "text" => "String",
         "bool" => "bool",
+        "date" => "chrono::NaiveDate",
         v => {
             if v.contains("character varying") {
                 "String"
@@ -76,6 +77,8 @@ pub async fn create_tables(pool: &Pool) {
             let field_comment = field.comment.unwrap_or("".to_string());
             if field_type.contains("rust_decimal") {
                 struct_str.push_str("    /// 参考 [`rust_decimal::Decimal`]\n");
+            } else if field.field_type == "date" { 
+                struct_str.push_str("    /// 参考 [`chrono::NaiveDate`]\n");
             }
             struct_str.push_str(&format!("    pub {}: {}, // {} - {}\n", field_name, field_type, field_comment, field.field_type));
         }
