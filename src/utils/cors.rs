@@ -14,7 +14,7 @@ pub fn allowed_domains(domains: &Vec<String>) -> actix_cors::Cors {
         cors = cors.allowed_origin(d);
     }
 
-    cors.allowed_methods(vec!["GET", "POST"])
+    cors.allowed_methods(vec!["GET", "POST", "OPTIONS"])
         .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
         .allowed_header(http::header::CONTENT_TYPE)
         .max_age(3600)

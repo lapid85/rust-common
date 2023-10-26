@@ -30,29 +30,31 @@ pub async fn set(site: &str, conn_string: &str) {
 }
 
 /// 得到数据库连接池 - 通过站点
-pub async fn get_by_site(site: &str) -> Db {
-    let Ok(mut servers) = SERVERS.lock() else {
-        panic!("Error: get SERVERS");
+pub async fn get_by_site(site: &str) -> Result<Db, String> {
+    let mut servers = match SERVERS.lock() { 
+        Ok(v) => v, 
+        Err(err) => {
+            return Err(format!("Error: get SERVERS lock {:?}", err));
+        }
     };
     if let Some(server) = servers.get(site) {
-        return server.clone();
+        return Ok(server.clone());
     }
-
     let Ok(server_string) = SITE_PGSQL_STRINGS.lock() else {
-        panic!("Error: get SITE_PGSQL_STRINGS");
+        return Err("Error: get SITE_PGSQL_STRINGS lock".to_owned());
     };
     println!("site = {}, {:?}", site, server_string);
     let Some(conn_string) = server_string.get(site) else {
-        panic!("Error: get CONN_STRING from HashMap");
+        return Err(format!("Error: get conn string by site '{}'", site));
     };
     let server = get(conn_string).await;
     (*servers).insert(site.to_owned(), server.clone());
-    server
+    Ok(server)
 }
 
 /// 得到数据库连接池 - 通过请求
 #[inline]
-pub async fn get_by_request(req: &actix_web::HttpRequest) -> Db {
+pub async fn get_by_request(req: &actix_web::HttpRequest) -> Result<Db, String> {
     let site = crate::request::get_site_code(req);
     get_by_site(&site).await
 }

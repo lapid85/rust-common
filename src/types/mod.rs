@@ -17,6 +17,7 @@ pub const STATUS_DISABLE: Val = Val::I16(crate::consts::STATUS_DISABLE);
 
 /// 数据库连接池
 pub type Db = pg::Pool;
+pub type Conn = pg::Conn;
 
 /// 数据库连接池配置
 pub type PoolOptions = pg::PoolOptions;

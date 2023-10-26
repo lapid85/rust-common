@@ -65,7 +65,7 @@ pub fn get_site_code(req: &HttpRequest) -> String {
     let headers = req.headers();
     if let Some(site) = headers.get("site") {
         let site = site.to_str().unwrap();
-        return site.to_string();
+        return site.to_uppercase();
     }
 
     let path = req.path();

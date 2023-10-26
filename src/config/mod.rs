@@ -102,4 +102,13 @@ pub async fn load_all(conn_string: &str) {
             }
         }
     }
+
+    println!("site_platforms = {:?}", site_platforms);
+    println!("site_pgsql_strings = {:?}", site_pgsql_strings);
+    println!("site_redis_strings = {:?}", site_redis_strings);
+    println!("site_redis_cluster = {:?}", site_redis_cluster);
+    println!("site_kafka_strings = {:?}", site_kafka_strings);
+    println!("site_static_urls = {:?}", site_static_urls);
+    println!("site_up_urls = {:?}", site_up_urls);
+    println!("site_names = {:?}", site_names);
 }
