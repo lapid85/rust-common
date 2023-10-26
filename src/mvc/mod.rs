@@ -21,7 +21,7 @@ pub fn get_struct_field_type(table_name: &String, field_type: &str) -> &'static 
             } else if v.contains("decimal") { 
                 "f64"
             } else if v.contains("numeric") { 
-                "f64"
+                "rust_decimal::Decimal"
             } else {
                 panic!("未知类型: {} - {}", table_name, v);
             }

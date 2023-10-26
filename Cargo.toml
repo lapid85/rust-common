@@ -9,7 +9,7 @@ response_json = []
 response_cbor = []
 
 [dependencies]
-sqlx = { version = "0.7", features = [ "runtime-tokio-native-tls", "postgres", "macros" ] }
+sqlx = { version = "0.7", features = [ "runtime-tokio-native-tls", "postgres", "macros", "rust_decimal" ] }
 dotenv = "0.15"
 redis = { version = "0.23", features = [ "r2d2", "ahash", "cluster-async", "tokio-comp", "connection-manager" ] }
 #futures = { version = "0.3" }
@@ -30,3 +30,4 @@ base64 = "0.21"
 serde_cbor = "0.11"
 Inflector = "0.11"
 rust-i18n = "2.2"
+rust_decimal = { version = "1.32"}
