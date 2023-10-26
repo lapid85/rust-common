@@ -12,10 +12,8 @@ pub trait Pagination {
         println!("query_str: {}", query_str);
         for item in query_str.split("&") {
             let pair = item.split("=").collect::<Vec<&str>>();
-            println!("pair: {:?}", pair);
             let key = pair[0];
             let value = pair[1];
-            println!("key: {}, value: {}", key, value);
             if key == "page" {
                 if let Ok(v) = value.parse::<i32>() {
                     page = v;

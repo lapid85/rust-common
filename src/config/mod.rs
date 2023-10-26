@@ -54,7 +54,7 @@ pub struct Config {
 pub async fn load_all(conn_string: &str) {
 
     let db = clients::pg::get(conn_string).await;
-    let platforms: Vec<Platform> = sqlx::query_as("select id, name from platforms").fetch_all(&db).await.unwrap();
+    let platforms: Vec<Platform> = sqlx::query_as("select id, name from platforms where status = 1").fetch_all(&db).await.unwrap();
 
     let mut site_static_urls = SITE_STATIC_URLS.lock().unwrap();
     let mut site_pgsql_strings = SITE_PGSQL_STRINGS.lock().unwrap();
@@ -69,14 +69,18 @@ pub async fn load_all(conn_string: &str) {
     site_pgsql_strings.insert(PLATFORM_SYSTEM.to_owned(), conn_string.to_owned());
 
     for platform in platforms {
-        let sites: Vec<Site> = sqlx::query_as("select id, name, platform_id, platform_name, code from sites where platform_id = $1")
+        let sites: Vec<Site> = sqlx::query_as("select id, name, platform_id, platform_name, code from sites where status = 1 AND platform_id = $1")
             .bind(platform.id)
             .fetch_all(&db)
             .await
             .unwrap();
         for site in sites {
+
             let code = site.code.clone();
-            let configs: Vec<Config> = sqlx::query_as("select id, name, platform_id, platform_name, site_id, site_name, value from configs where platform_id = $1 and site_id = $2")
+            site_platforms.insert(code.clone(), platform.name.clone());
+            site_names.insert(code.clone(), site.name.clone());
+
+            let configs: Vec<Config> = sqlx::query_as("select id, name, platform_id, platform_name, site_id, site_name, value from configs where status = 1 AND platform_id = $1 and site_id = $2")
                 .bind(platform.id)
                 .bind(site.id)
                 .fetch_all(&db)
@@ -96,9 +100,6 @@ pub async fn load_all(conn_string: &str) {
                 } else if config.name == "up_url" {
                     site_up_urls.insert(code.clone(), config.value.clone());
                 } 
-
-                site_names.insert( code.clone(), config.name.clone());
-                site_platforms.insert( code.clone(), config.platform_name.clone());
             }
         }
     }
