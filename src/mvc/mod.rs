@@ -49,20 +49,24 @@ pub async fn create_tables(pool: &Pool) {
     // 创建结构体
     for table in tables {
         let mut struct_str = String::new();
+        // //!   */
         // use crud_derive::CRUDTable;
         // use serde::{Deserialize, Serialize};
         // use sqlx::FromRow;
         // use std::fmt::Debug;
         // #[derive(Serialize, Deserialize, Debug, FromRow, Default, CRUDTable, Clone)]
+        struct_str.push_str(&format!("//! 表名: {} - 本文档为脚本自动生成,每次生成都会被自动覆盖,请不要修改 \n\n", table.name.as_str()));
         struct_str.push_str("use crud_derive::CRUDTable;\n");
         struct_str.push_str("use serde::{Deserialize, Serialize};\n");
         struct_str.push_str("use sqlx::FromRow;\n");
         struct_str.push_str("use std::fmt::Debug;\n");
         struct_str.push_str("\n");
+
+        let struct_name = strings::table_name_to_struct_name(table.name.as_str());
+        struct_str.push_str(&format!("/// 模型: {}\n", struct_name));
         struct_str.push_str(
             "#[derive(Serialize, Deserialize, Debug, FromRow, Default, CRUDTable, Clone)]\n",
         );
-        let struct_name = strings::table_name_to_struct_name(table.name.as_str());
         struct_str.push_str(&format!("pub struct {} {{\n", struct_name));
 
         let fields = table_info::list_fields(pool, &table.name).await;
@@ -70,6 +74,9 @@ pub async fn create_tables(pool: &Pool) {
             let field_type = get_struct_field_type(&table.name, field.field_type.as_str());
             let field_name = field.field_name.to_lowercase();
             let field_comment = field.comment.unwrap_or("".to_string());
+            if field_type.contains("rust_decimal") {
+                struct_str.push_str("    /// 参考 [`rust_decimal::Decimal`]\n");
+            }
             struct_str.push_str(&format!("    pub {}: {}, // {} - {}\n", field_name, field_type, field_comment, field.field_type));
         }
         struct_str.push_str("}\n");
