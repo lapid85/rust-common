@@ -73,7 +73,8 @@ pub async fn create_tables(pool: &Pool) {
             struct_str.push_str(&format!("    pub {}: {}, // {} - {}\n", field_name, field_type, field_comment, field.field_type));
         }
         struct_str.push_str("}\n");
-        structs.push_str(&format!("pub mod {};\n", table.name));
+        structs.push_str(&format!("pub mod {};\n", table.name)); // 创建 mod.rs
+        structs.push_str(&format!("pub use {}::*;\n", table.name)); // 创建 mod.rs
 
         let mut file_path = current_dir.clone();
         file_path.push(format!("{}.rs", table.name));
