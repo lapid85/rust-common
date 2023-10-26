@@ -1,5 +1,6 @@
 use super::Val;
 
+#[derive(Debug)]
 pub struct Cond {
     fields: Vec<String>, // 存储 AND 条件
     operators: Vec<String>, // 存储操作符

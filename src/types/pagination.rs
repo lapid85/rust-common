@@ -9,22 +9,22 @@ pub trait Pagination {
         let mut page_size = consts::PAGE_SIZE;
 
         let query_str = req.query_string();
+        println!("query_str: {}", query_str);
         for item in query_str.split("&") {
-            let mut pair = item.split("=");
-            let key = pair.next().unwrap_or("");
+            let pair = item.split("=").collect::<Vec<&str>>();
+            println!("pair: {:?}", pair);
+            let key = pair[0];
+            let value = pair[1];
+            println!("key: {}, value: {}", key, value);
             if key == "page" {
-                if let Some(v) = pair.next() {
-                    if let Ok(v) = v.parse::<i32>() {
-                        page = v;
-                    }
+                if let Ok(v) = value.parse::<i32>() {
+                    page = v;
                 }
                 continue;
             }
             if key == "limit" {
-                if let Some(v) = pair.next() {
-                    if let Ok(v) = v.parse::<i32>() {
-                        page_size = v;
-                    }
+                if let Ok(v) = value.parse::<i32>() {
+                    page_size = v;
                 }
                 continue;
             }
