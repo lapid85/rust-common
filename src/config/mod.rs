@@ -68,7 +68,6 @@ pub async fn load_all(conn_string: &str) {
     // 设置默认的数据库连接字符串
     site_pgsql_strings.insert(PLATFORM_SYSTEM.to_owned(), conn_string.to_owned());
 
-
     for platform in platforms {
         let sites: Vec<Site> = sqlx::query_as("select id, name, platform_id, platform_name, code from sites where platform_id = $1")
             .bind(platform.id)

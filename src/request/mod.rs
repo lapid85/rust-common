@@ -73,5 +73,5 @@ pub fn get_site_code(req: &HttpRequest) -> String {
         return PLATFORM_SYSTEM.to_string();
     }
 
-    "".to_owned()
+    "AK".to_owned()
 }

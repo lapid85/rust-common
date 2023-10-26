@@ -23,6 +23,11 @@ impl Cond {
         }
     }
 
+    /// 判断是否空参数
+    pub fn has_args(&self) -> bool {
+        self.arg_count > 0
+    }
+
     /// 用于构建 WHERE 子句
     pub fn and(&mut self, condition: &str) -> &mut Self {
         self.fields.push(condition.to_string());
