@@ -12,6 +12,7 @@ pub fn get_struct_field_type(table_name: &String, field_type: &str) -> &'static 
         "text" => "String",
         "bool" => "bool",
         "date" => "chrono::NaiveDate",
+        "integer[]" => "Vec<i32>",
         v => {
             if v.contains("character varying") {
                 "String"
