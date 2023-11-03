@@ -27,34 +27,33 @@ pub async fn set(site: &str, conn_string: &str) {
 
 /// 得到系统平台 redis client - 通过站点
 pub async fn get_by_site(site: &str) -> Result<Rd, String> {
-    let read_servers = match SERVERS.read() { 
-        Ok(v) => v,
+    match SERVERS.read() { 
+        Ok(read_servers) => {
+            if let Some(server) = read_servers.get(site) {
+                return Ok(server.clone());
+            }
+        },
         Err(e) => {
             return Err(format!("get redis client error: {:?}", e));
         }
     };
-    if let Some(server) = read_servers.get(site) {
-        return Ok(server.clone());
-    }
     // 从配置文件中读取
-    let server_string = match SITE_REDIS_STRINGS.read() { 
-        Ok(v) => v,
-        Err(e) => {
-            return Err(format!("get redis client error: {:?}", e));
-        }
+    let Ok(server_string) = SITE_REDIS_STRINGS.read() else { 
+        return Err(format!("Error: cannot get SITE_REDIS_STRINGS read()"));
     };
     let Some(conn_string) = server_string.get(site)  else { 
         return Err("get redis string error".to_owned());
     };
-    let mut servers = match SERVERS.write() { 
-        Ok(v) => v,
+    match SERVERS.write() { 
+        Ok(mut servers) => {
+            let server = get(conn_string).await;
+            (*servers).insert(site.to_owned(), server.clone());
+            return Ok(server);
+        },
         Err(e) => {
             return Err(format!("get redis client error: {:?}", e));
         }
     };
-    let server = get(conn_string).await;
-    (*servers).insert(site.to_owned(), server.clone());
-    Ok(server)
 }
 
 /// 得到平台 redis cluster client - 通过站点
@@ -78,34 +77,34 @@ pub async fn set_cluster(site: &str, nodes: Vec<String>) {
 
 /// 得到平台 redis cluster client - 通过站点
 pub async fn get_cluster_by_site(site: &str) -> Result<ClusterRd, String> {
-    let read_servers = match CLUSTERS.write() { 
-        Ok(v) => v,
+    match CLUSTERS.write() { 
+        Ok(read_servers) => {
+            if let Some(server) = read_servers.get(site) {
+                return Ok(server.clone());
+            }
+        },
         Err(e) => {
             return Err(format!("get redis client error: {:?}", e));
         }
     };
-    if let Some(server) = read_servers.get(site) {
-        return Ok(server.clone());
-    }
+    
     // 从配置文件中读取
-    let server_string = match SITE_REDIS_STRINGS.read() { 
-        Ok(v) => v,
-        Err(e) => {
-            return Err(format!("get redis client error: {:?}", e));
-        }
+    let Ok(server_string) = SITE_REDIS_STRINGS.read() else { 
+        return Err(format!("Error: cannot get SITE_REDIS_STRINGS read()"));
     };
     let Some(conn_string) = server_string.get(site)  else { 
         return Err("get redis string error".to_owned());
     };
-    let mut servers = match CLUSTERS.write() { 
-        Ok(v) => v,
+    match CLUSTERS.write() { 
+        Ok(mut servers) => {
+            let server = get_cluster(vec![conn_string.clone()]).await;
+            (*servers).insert(site.to_owned(), server.clone());
+            return Ok(server);
+        },
         Err(e) => {
             return Err(format!("get redis client error: {:?}", e));
         }
     };
-    let server = get_cluster(vec![conn_string.clone()]).await;
-    (*servers).insert(site.to_owned(), server.clone());
-    Ok(server)
 }
 
 
