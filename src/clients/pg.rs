@@ -1,11 +1,11 @@
 use crate::consts;
 use crate::types::{Db, PoolOptions};
 use std::collections::HashMap;
-use std::sync::{Mutex, Arc};
+use std::sync::{Arc, RwLock};
 use crate::config::SITE_PGSQL_STRINGS;
 
 lazy_static! {
-    pub static ref SERVERS: Arc<Mutex<HashMap<String, Db>>> = Arc::new(Mutex::new(HashMap::new()));
+    pub static ref SERVERS: Arc<RwLock<HashMap<String, Db>>> = Arc::new(RwLock::new(HashMap::new()));
 }
 
 /// 得到数据库连接池 - 通过连接字符串
@@ -24,14 +24,14 @@ pub async fn get(conn_string: &str) -> Db {
 
 /// 设置数据库连接池 - 通过站点
 pub async fn set(site: &str, conn_string: &str) {
-    let mut servers = SERVERS.lock().unwrap();
+    let mut servers = SERVERS.write().unwrap();
     let server = get(conn_string).await;
     (*servers).insert(site.to_owned(), server.clone());
 }
 
 /// 得到数据库连接池 - 通过站点
 pub async fn get_by_site(site: &str) -> Result<Db, String> {
-    let mut servers = match SERVERS.lock() { 
+    let mut servers = match SERVERS.write() { 
         Ok(v) => v, 
         Err(err) => {
             return Err(format!("Error: get SERVERS lock {:?}", err));
