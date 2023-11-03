@@ -2,7 +2,7 @@ use dotenv;
 use crate::clients;
 use sqlx::FromRow;
 use std::collections::HashMap;
-use std::sync::{Mutex, Arc};
+use std::sync::{RwLock, Arc};
 use crate::consts::PLATFORM_SYSTEM;
 use log::info;
 
@@ -10,14 +10,14 @@ use log::info;
 pub mod env;
 
 lazy_static! {
-    pub static ref SITE_STATIC_URLS: Arc<Mutex<HashMap<String, String>>> = Arc::new(Mutex::new(HashMap::new()));
-    pub static ref SITE_PGSQL_STRINGS: Arc<Mutex<HashMap<String, String>>> = Arc::new(Mutex::new(HashMap::new()));
-    pub static ref SITE_REDIS_STRINGS: Arc<Mutex<HashMap<String, String>>> = Arc::new(Mutex::new(HashMap::new()));
-    pub static ref SITE_REDIS_CLUSTER: Arc<Mutex<HashMap<String, String>>> = Arc::new(Mutex::new(HashMap::new()));
-    pub static ref SITE_KAFKA_STRINGS: Arc<Mutex<HashMap<String, String>>> = Arc::new(Mutex::new(HashMap::new()));
-    pub static ref SITE_NAMES: Arc<Mutex<HashMap<String, String>>> = Arc::new(Mutex::new(HashMap::new()));
-    pub static ref SITE_PLATFORMS: Arc<Mutex<HashMap<String, String>>> = Arc::new(Mutex::new(HashMap::new()));
-    pub static ref SITE_UP_URLS: Arc<Mutex<HashMap<String, String>>> = Arc::new(Mutex::new(HashMap::new()));
+    pub static ref SITE_STATIC_URLS: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
+    pub static ref SITE_PGSQL_STRINGS: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
+    pub static ref SITE_REDIS_STRINGS: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
+    pub static ref SITE_REDIS_CLUSTER: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
+    pub static ref SITE_KAFKA_STRINGS: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
+    pub static ref SITE_NAMES: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
+    pub static ref SITE_PLATFORMS: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
+    pub static ref SITE_UP_URLS: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
 }
 
 // 加载配置文件
@@ -57,14 +57,14 @@ pub async fn load_all(conn_string: &str) {
     let db = clients::pg::get(conn_string).await;
     let platforms: Vec<Platform> = sqlx::query_as("select id, name from platforms where status = 1").fetch_all(&db).await.unwrap();
 
-    let mut site_static_urls = SITE_STATIC_URLS.lock().unwrap();
-    let mut site_pgsql_strings = SITE_PGSQL_STRINGS.lock().unwrap();
-    let mut site_redis_strings = SITE_REDIS_STRINGS.lock().unwrap();
-    let mut site_redis_cluster = SITE_REDIS_CLUSTER.lock().unwrap();
-    let mut site_kafka_strings = SITE_KAFKA_STRINGS.lock().unwrap();
-    let mut site_names = SITE_NAMES.lock().unwrap();
-    let mut site_platforms = SITE_PLATFORMS.lock().unwrap();
-    let mut site_up_urls = SITE_UP_URLS.lock().unwrap();
+    let mut site_static_urls = SITE_STATIC_URLS.write().unwrap();
+    let mut site_pgsql_strings = SITE_PGSQL_STRINGS.write().unwrap();
+    let mut site_redis_strings = SITE_REDIS_STRINGS.write().unwrap();
+    let mut site_redis_cluster = SITE_REDIS_CLUSTER.write().unwrap();
+    let mut site_kafka_strings = SITE_KAFKA_STRINGS.write().unwrap();
+    let mut site_names = SITE_NAMES.write().unwrap();
+    let mut site_platforms = SITE_PLATFORMS.write().unwrap();
+    let mut site_up_urls = SITE_UP_URLS.write().unwrap();
 
     // 设置默认的数据库连接字符串
     site_pgsql_strings.insert(PLATFORM_SYSTEM.to_owned(), conn_string.to_owned());
