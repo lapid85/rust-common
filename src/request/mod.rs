@@ -1,6 +1,17 @@
 use actix_web::HttpRequest;
 use crate::consts::PLATFORM_SYSTEM;
 
+/// 获取ip
+const IP_HEADERS: [&'static str; 7] = [
+    "x-real-ip",
+    "x-forwarded-for",
+    "x-client-ip",
+    "x-cluster-client-ip",
+    "forwarded-for",
+    "client-ip",
+    "remote-addr",
+];
+
 /// 获取 GET 请求结果
 pub async fn get(url: &str) -> Result<String, &'static str> {
     let Ok(response) = reqwest::get(url).await else {
@@ -74,4 +85,17 @@ pub fn get_site_code(req: &HttpRequest) -> String {
     }
 
     "AK".to_owned()
+}
+
+/// 获取ip
+pub fn client_ip(req: &HttpRequest) -> Option<String> {
+    let headers = req.headers();
+    for h in IP_HEADERS {
+        if let Some(ip) = headers.get(h) {
+            let ip = ip.to_str().unwrap();
+            return Some(ip.to_string());
+        }
+    }
+
+    None
 }
