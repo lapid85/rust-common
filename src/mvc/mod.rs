@@ -13,6 +13,7 @@ pub fn get_struct_field_type(table_name: &String, field_type: &str) -> &'static 
         "bool" => "bool",
         "date" => "chrono::NaiveDate",
         "integer[]" => "Vec<i32>",
+        "text[]" => "Vec<String>",
         v => {
             if v.contains("character varying") {
                 "String"
@@ -96,6 +97,7 @@ pub async fn create_tables(pool: &Pool) {
     }
 
     // 创建 mod.rs
+    structs.push_str("\npub mod ext;\n");
     let mut mod_file = current_dir.clone();
     mod_file.push("mod.rs");
     fs::write(mod_file, structs).expect("Unable to write file");
