@@ -130,7 +130,6 @@ impl Cond {
     pub fn build(&self) -> String {
         let mut query = String::new();
         let has_and = self.fields.len() > 0;
-        println!("has_and: {}, fields: {:?}, operators: {:?}, args: {:?}", has_and, self.fields, self.operators, self.args);
         if has_and {
             for (i, field) in self.fields.iter().enumerate() {
                 let operator = &self.operators[i as usize];

@@ -2,9 +2,15 @@ use serde::{Serialize, Deserialize};
 use jsonwebtoken::{encode, decode, Header, Validation, EncodingKey, DecodingKey};
 use log::error;
 use crate::utils::dt;
+use actix_web::HttpRequest;
 
 /// token secret
 const TOKEN_SECRET: &'static str = "qwe123QWE!@#";
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Token {
+    pub token: String,
+}
 
 /// Our claims struct, it needs to derive `Serialize` and/or `Deserialize`
 #[derive(Debug, Serialize, Deserialize)]
@@ -16,16 +22,17 @@ pub struct Claims {
 }
 
 /// 创建claims
-pub fn new_claims(id: i32, username: String, ip: String) -> Claims {
+pub fn new_claims(id: i32, username: &String, ip: &String) -> Claims {
     Claims {
         id,
-        username,
-        ip,
+        username: username.clone(),
+        ip: ip.clone(),
         exp: dt::timestamp(),
     }
 }
 
 /// 得到token
+#[inline]
 pub fn get_token(info: &Claims) -> Result<String, String> {
     match encode(&Header::default(), &info, &EncodingKey::from_secret(TOKEN_SECRET.as_ref())) {
         Ok(t) => Ok(t),
@@ -34,6 +41,7 @@ pub fn get_token(info: &Claims) -> Result<String, String> {
 }
 
 /// 检测token
+#[inline]
 pub fn get_claims(token: &str) -> Result<Claims, String> {
     let token_data = match decode::<Claims>(token, &DecodingKey::from_secret(TOKEN_SECRET.as_ref()), &Validation::default()) {
         Ok(c) => c,
@@ -43,4 +51,23 @@ pub fn get_claims(token: &str) -> Result<Claims, String> {
         }
     };
     Ok(token_data.claims)
+}
+
+/// 检测token
+#[inline]
+pub fn get_claims_by_request(req: &HttpRequest) -> Result<Claims, String> {
+    let token_str = match match req.headers().get("Authorization") {
+        Some(v) => v.to_str(),
+        None => { 
+            error!("get token from request error");
+            return Err("get token from request error".to_owned());
+        }
+    }  {
+        Ok(v) => v,
+        Err(err) => {
+            error!("get token from request error: {}", err);
+            return Err("get token from request error".to_owned());
+        }
+    };
+    get_claims(&token_str)
 }
