@@ -33,3 +33,4 @@ rust-i18n = "2.2"
 rust_decimal = { version = "1.32"}
 log = "0.4"
 env_logger = "0.10"
+jsonwebtoken = { version = "9.1" }
