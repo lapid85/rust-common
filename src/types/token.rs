@@ -9,7 +9,6 @@ use std::sync::Mutex;
 /// token secret
 const TOKEN_SECRET: &'static str = "qwe123QWE!@#";
 const TOKEN_EXPIRE: i64 = 1800; // token过期时间
-pub const AUTHORIZATION: &'static str = "authorization"; // auth
 
 lazy_static! {
     static ref USER_TOKENS: Mutex<HashMap<String, i64>> = Mutex::new(HashMap::new());

@@ -5,6 +5,7 @@ pub const PAGE_DEFAULT: i32 = 1;
 /// 平台系统
 pub const PLATFORM_SYSTEM: &'static str = "platform";
 pub const PLATFORM_KEY: &'static str = "site";
+pub const AUTHORIZATION: &'static str = "authorization";
 
 /// 状态：启用
 pub const STATUS_ENABLE: i16 = 1;
