@@ -1,19 +1,41 @@
-use chrono::{DateTime, Datelike, Duration, Local, NaiveDateTime, Timelike};
+use chrono::{DateTime, Datelike, Duration, NaiveDateTime, Timelike, Utc};
 
 /// 获取当前时间
 #[inline]
-pub fn now() -> DateTime<Local> {
-    Local::now()
+pub fn now() -> DateTime<Utc> {
+    chrono::Utc::now()
 }
 
-pub fn now_utc_micro() -> i64 {
-    let current_time = chrono::Utc::now();
-    let timestamp = current_time.timestamp_millis();
+/// 得到当前时间戳, 单位: 秒
+#[inline]
+pub fn timestamp() -> i64 {
+    let local = now();
+    let timestamp = local.timestamp();
     timestamp
 }
 
+/// 获取当前时间戳 - 秒
+#[inline]
+pub fn now_utc_secs() -> i64 {
+    timestamp()
+}
+
+/// 获取当前时间戳 - 毫秒
+#[inline]
+pub fn now_utc_mills() -> i64 {
+    let current_time = chrono::Utc::now();
+    current_time.timestamp_millis()
+}
+
+/// 获取当前时间戳 - 毫秒
+#[inline]
+pub fn now_utc_micro() -> i64 {
+    let current_time = chrono::Utc::now();
+    current_time.timestamp_micros()
+}
+
 /// 获取今天凌晨的时间戳
-pub fn today_begin() -> DateTime<Local> {
+pub fn today_begin() -> DateTime<Utc> {
     let current_time = now();
     let hour = current_time.with_hour(0).unwrap();
     let minute = hour.with_minute(0).unwrap();
@@ -22,7 +44,7 @@ pub fn today_begin() -> DateTime<Local> {
 }
 
 /// 获取今天结束的时间戳
-pub fn today_end() -> DateTime<Local> {
+pub fn today_end() -> DateTime<Utc> {
     let current_time = now();
     let hour = current_time.with_hour(23).unwrap();
     let minute = hour.with_minute(59).unwrap();
@@ -31,7 +53,7 @@ pub fn today_end() -> DateTime<Local> {
 }
 
 /// 一周开始时间
-pub fn week_begin(date: &DateTime<Local>) -> DateTime<Local> {
+pub fn week_begin(date: &DateTime<Utc>) -> DateTime<Utc> {
     let weekday = date.weekday();
     let current_time = now();
     let days_from_monday = weekday.num_days_from_monday();
@@ -43,7 +65,7 @@ pub fn week_begin(date: &DateTime<Local>) -> DateTime<Local> {
 }
 
 /// 一周结束时间
-pub fn week_end(date: &DateTime<Local>) -> DateTime<Local> {
+pub fn week_end(date: &DateTime<Utc>) -> DateTime<Utc> {
     let weekday = date.weekday();
     let current_time = now();
     let days_from_monday = weekday.num_days_from_monday();
@@ -55,7 +77,7 @@ pub fn week_end(date: &DateTime<Local>) -> DateTime<Local> {
 }
 
 /// 一月开始时间
-pub fn month_start() -> DateTime<Local> {
+pub fn month_start() -> DateTime<Utc> {
     let current_time = now();
     let day = current_time.with_day(1).unwrap();
     let hour = day.with_hour(0).unwrap();
@@ -65,7 +87,7 @@ pub fn month_start() -> DateTime<Local> {
 }
 
 /// 获取月末时间
-pub fn month_end() -> DateTime<Local> {
+pub fn month_end() -> DateTime<Utc> {
     let current_time = now();
     let year = current_time.year();
     let month = current_time.month();
@@ -83,7 +105,7 @@ pub fn month_end() -> DateTime<Local> {
 
 /// 获取当前日期 - 元组
 pub fn date_tuple() -> (i32, u32, u32) {
-    let current_time: DateTime<Local> = now();
+    let current_time: DateTime<Utc> = now();
     let year = current_time.year();
     let month = current_time.month();
     let day = current_time.day();
@@ -91,8 +113,8 @@ pub fn date_tuple() -> (i32, u32, u32) {
 }
 
 /// 获取当前日期时间 - 元组
-pub fn datetime_tuple() -> (i32, u32, u32, u32, u32, u32) {
-    let current_time: DateTime<Local> = now();
+pub fn date_time_tuple() -> (i32, u32, u32, u32, u32, u32) {
+    let current_time: DateTime<Utc> = now();
     let year = current_time.year();
     let month = current_time.month();
     let day = current_time.day();
@@ -102,26 +124,18 @@ pub fn datetime_tuple() -> (i32, u32, u32, u32, u32, u32) {
     (year, month, day, hour, minute, second)
 }
 
-/// 得到当前时间戳, 单位: 秒
-#[inline]
-pub fn timestamp() -> i64 {
-    let local: DateTime<Local> = now();
-    let timestamp = local.timestamp();
-    timestamp
-}
-
 /// 得到当前时间 - 字符串
 #[inline]
-pub fn datetime() -> String {
-    let local: DateTime<Local> = now();
-    let datetime_str = local.format("%Y-%m-%d %H:%M:%S").to_string();
-    datetime_str
+pub fn date_time() -> String {
+    let local: DateTime<Utc> = now();
+    let date_time_str = local.format("%Y-%m-%d %H:%M:%S").to_string();
+    date_time_str
 }
 
 /// 将日期字符串转换为时间戳 - 非utc
-pub fn str_to_timestamp(datetime_str: &str) -> i64 {
+pub fn str_to_timestamp(date_time_str: &str) -> i64 {
     let format_str = "%Y-%m-%d %H:%M:%S";
-    match NaiveDateTime::parse_from_str(datetime_str, format_str) {
+    match NaiveDateTime::parse_from_str(date_time_str, format_str) {
         Ok(v) => v.timestamp(),
         Err(err) => {
             println!("解析时间失败: {:?}", err);
@@ -132,14 +146,14 @@ pub fn str_to_timestamp(datetime_str: &str) -> i64 {
 
 /// 将时间戳转换为日期字符串 - 非utc
 pub fn timestamp_to_str(timestamp: i64) -> String {
-    let Some(datetime) = NaiveDateTime::from_timestamp_opt(timestamp, 0) else {
+    let Some(date_time) = NaiveDateTime::from_timestamp_opt(timestamp, 0) else {
         return "2001-01-01 00:00:00".to_owned();
     };
-    datetime.format("%Y-%m-%d %H:%M:%S").to_string()
+    date_time.format("%Y-%m-%d %H:%M:%S").to_string()
 }
 
 /// 默认开始时间 - 本日开始
-pub fn default_start() -> DateTime<Local> {
+pub fn default_start() -> DateTime<Utc> {
     let current = now();
     let hour = current.with_hour(0).unwrap();
     let minute = hour.with_minute(0).unwrap();
@@ -148,7 +162,7 @@ pub fn default_start() -> DateTime<Local> {
 }
 
 /// 默认结束时间 - 本日结束
-pub fn default_end() -> DateTime<Local> {
+pub fn default_end() -> DateTime<Utc> {
     let current = now();
     let hour = current.with_hour(23).unwrap();
     let minute = hour.with_minute(59).unwrap();
