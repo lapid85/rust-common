@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 use jsonwebtoken::{encode, decode, Header, Validation, EncodingKey, DecodingKey};
-use log::error;
+use log::{error, info};
 use crate::utils::dt;
 use actix_web::HttpRequest;
 use std::collections::HashMap;
@@ -9,7 +9,7 @@ use std::sync::Mutex;
 /// token secret
 const TOKEN_SECRET: &'static str = "qwe123QWE!@#";
 const TOKEN_EXPIRE: i64 = 1800; // token过期时间
-pub const AUTHORIZATION: &'static str = "Authorization"; // auth
+pub const AUTHORIZATION: &'static str = "authorization"; // auth
 
 lazy_static! {
     static ref USER_TOKENS: Mutex<HashMap<String, i64>> = Mutex::new(HashMap::new());
@@ -19,6 +19,7 @@ lazy_static! {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Token {
     pub token: String,
+    pub expires: i64,
 }
 
 /// 检查token是否过期
@@ -45,6 +46,15 @@ pub fn start() {
     });
 }
 
+/// 添加token
+pub fn add(token: &str, timestamp: i64) {
+    let Ok(mut tokens) = USER_TOKENS.lock() else { 
+        error!("get token lock error");
+        return;
+    };
+    tokens.insert(token.to_owned(), timestamp);
+}
+
 /// 刷新token
 pub fn refresh(token_old: &str, token_new: &str) {
     let Ok(mut tokens) = USER_TOKENS.lock() else { 
@@ -61,6 +71,7 @@ pub fn has(token: &str) -> bool {
         error!("get token lock error");
         return false;
     };
+    info!("tokens: {:?}", tokens);
     tokens.contains_key(token)
 }
 
