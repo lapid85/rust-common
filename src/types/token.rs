@@ -3,13 +3,74 @@ use jsonwebtoken::{encode, decode, Header, Validation, EncodingKey, DecodingKey}
 use log::error;
 use crate::utils::dt;
 use actix_web::HttpRequest;
+use std::collections::HashMap;
+use std::sync::Mutex;
 
 /// token secret
 const TOKEN_SECRET: &'static str = "qwe123QWE!@#";
+const TOKEN_EXPIRE: i64 = 1800; // token过期时间
+pub const AUTHORIZATION: &'static str = "Authorization"; // auth
+
+lazy_static! {
+    static ref USER_TOKENS: Mutex<HashMap<String, i64>> = Mutex::new(HashMap::new());
+}
+
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Token {
     pub token: String,
+}
+
+/// 检查token是否过期
+pub fn start() { 
+    let expire_secs = tokio::time::Duration::from_secs(5); // 每5秒钟检查一次过期token
+    tokio::task::spawn(async move {
+        loop {
+            tokio::time::sleep(expire_secs).await;
+            let Ok(mut tokens) = USER_TOKENS.lock() else { 
+                error!("get token lock error");
+                continue;
+            };
+            let now = dt::timestamp();
+            let mut del_keys = Vec::new();
+            for (k, v) in tokens.iter() {
+                if now - v > TOKEN_EXPIRE {
+                    del_keys.push(k.clone());
+                }
+            }
+            for k in del_keys {
+                tokens.remove(&k);
+            }
+        }
+    });
+}
+
+/// 刷新token
+pub fn refresh(token_old: &str, token_new: &str) {
+    let Ok(mut tokens) = USER_TOKENS.lock() else { 
+        error!("get token lock error");
+        return;
+    };
+    tokens.remove(token_old);
+    tokens.insert(token_new.to_owned(), dt::timestamp());
+}
+
+/// 添加token
+pub fn has(token: &str) -> bool {
+    let Ok(tokens) = USER_TOKENS.lock() else {
+        error!("get token lock error");
+        return false;
+    };
+    tokens.contains_key(token)
+}
+
+/// 添加token
+pub fn remove(token: &str) {
+    let Ok(mut tokens) = USER_TOKENS.lock() else {
+        error!("get token lock error");
+        return;
+    };
+    tokens.remove(token);
 }
 
 /// Our claims struct, it needs to derive `Serialize` and/or `Deserialize`
