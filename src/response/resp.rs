@@ -1,6 +1,7 @@
 use actix_web::HttpResponse;
 use serde::ser;
 use super::{JsonOK, JsonOKMsg, JsonError, JsonResult};
+use log::error;
 
 /// 返回200
 pub fn ok() -> HttpResponse {
@@ -38,6 +39,7 @@ pub fn deny() -> HttpResponse {
 /// 返回错误消息
 #[inline]
 pub fn error<T: AsRef<str>>(message: T) -> HttpResponse {
+    error!("返回错误信息: {}", message.as_ref());
     #[cfg(not(feature = "response_cbor"))]
     return HttpResponse::Ok().json(&JsonError {
         code: 500, 

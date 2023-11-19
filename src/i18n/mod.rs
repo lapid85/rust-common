@@ -10,9 +10,11 @@ macro_rules! tr {
                     _ => rust_i18n::t!($key, locale = "zh-CN"),
                 }
             } else { 
+                log::error!("Accept-Language转换失败");
                 "".to_owned()
             }
         } else {
+            log::error!("缺少头信息: Accept-Language");
             "".to_owned()
         }
     }}

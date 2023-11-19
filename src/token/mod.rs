@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 use jsonwebtoken::{encode, decode, Header, Validation, EncodingKey, DecodingKey};
-use log::{error, info};
+use log::error;
 use crate::utils::dt;
 use actix_web::HttpRequest;
 use std::collections::HashMap;
@@ -70,7 +70,6 @@ pub fn has(token: &str) -> bool {
         error!("get token lock error");
         return false;
     };
-    info!("tokens: {:?}", tokens);
     tokens.contains_key(token)
 }
 

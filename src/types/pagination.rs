@@ -9,7 +9,6 @@ pub trait Pagination {
         let mut page_size = consts::PAGE_SIZE;
 
         let query_str = req.query_string().trim();
-        println!("query_str: {}", query_str);
         let arr = query_str.split("&").collect::<Vec<&str>>();
         if arr.len() == 0 { 
             return (page, page_size);
