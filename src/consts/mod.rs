@@ -9,6 +9,9 @@ pub const AUTHORIZATION: &'static str = "authorization";
 pub const CONTENT_TYPE: &'static str = "content-type";
 pub const CONTENT_TYPE_JSON: &'static str = "application/json; charset=utf-8";
 
+pub const RESOURCE_KIND_DEFAULT: i32 = 1001;
+pub const RESOURCE_KIND_BEGIN: i32 = 1006;
+
 /// 状态：启用
 pub const STATUS_ENABLE: i16 = 1;
 /// 状态：禁用
