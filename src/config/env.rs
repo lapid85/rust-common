@@ -15,7 +15,11 @@ macro_rules! get_as_vec {
     ($fn_name: ident, $type: ty) => {
         pub fn $fn_name(item: &'static str, default_value: Vec<$type>) -> Vec<$type> {
             if let Ok(values) = dotenv::var(item) {
-                return values.split(',').map(|v| v.trim()).filter_map(|v| v.parse::<$type>().ok()).collect();
+                return values
+                    .split(',')
+                    .map(|v| v.trim())
+                    .filter_map(|v| v.parse::<$type>().ok())
+                    .collect();
             }
             default_value
         }
@@ -60,7 +64,6 @@ get_as_vec!(get_vec_string, String);
 get_as_vec!(get_vec_char, char);
 get_as_vec!(get_vec_path_buf, std::path::PathBuf);
 
-
 /// 获得配置内容
 pub fn get_var(item: &'static str, default_value: &'static str) -> String {
     dotenv::var(item).unwrap_or(default_value.to_string())
@@ -69,7 +72,11 @@ pub fn get_var(item: &'static str, default_value: &'static str) -> String {
 /// 获得配置内容
 pub fn get_vec(item: &'static str) -> Vec<String> {
     if let Ok(values) = dotenv::var(item) {
-        return  values.split(',').map(|v| v.trim()).map(|v| v.to_string()).collect();
+        return values
+            .split(',')
+            .map(|v| v.trim())
+            .map(|v| v.to_string())
+            .collect();
     }
     vec![]
 }

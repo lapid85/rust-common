@@ -1,7 +1,7 @@
+use super::{JsonError, JsonOK, JsonOKMsg, JsonResult};
 use actix_web::HttpResponse;
-use serde::ser;
-use super::{JsonOK, JsonOKMsg, JsonError, JsonResult};
 use log::error;
+use serde::ser;
 
 /// 返回200
 pub fn ok() -> HttpResponse {
@@ -11,13 +11,12 @@ pub fn ok() -> HttpResponse {
     return super::cbor_response(&JsonOK { code: 0 });
 }
 
-
 /// 返回200
 #[inline]
 pub fn ok_msg(msg: &str) -> HttpResponse {
     #[cfg(not(feature = "response_cbor"))]
     return HttpResponse::Ok().json(JsonOKMsg {
-        code: 0, 
+        code: 0,
         message: msg,
     });
     #[cfg(feature = "response_cbor")]
@@ -42,7 +41,7 @@ pub fn error<T: AsRef<str>>(message: T) -> HttpResponse {
     error!("返回错误信息: {}", message.as_ref());
     #[cfg(not(feature = "response_cbor"))]
     return HttpResponse::Ok().json(&JsonError {
-        code: 500, 
+        code: 500,
         message: message.as_ref(),
     });
     #[cfg(feature = "response_cbor")]

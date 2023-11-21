@@ -1,23 +1,31 @@
-use dotenv;
 use crate::clients;
+use crate::consts::PLATFORM_SYSTEM;
+use dotenv;
+use log::info;
 use sqlx::FromRow;
 use std::collections::HashMap;
-use std::sync::{RwLock, Arc};
-use crate::consts::PLATFORM_SYSTEM;
-use log::info;
+use std::sync::{Arc, RwLock};
 
 /// 获得配置内容
 pub mod env;
 
 lazy_static! {
-    pub static ref SITE_STATIC_URLS: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
-    pub static ref SITE_PGSQL_STRINGS: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
-    pub static ref SITE_REDIS_STRINGS: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
-    pub static ref SITE_REDIS_CLUSTER: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
-    pub static ref SITE_KAFKA_STRINGS: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
-    pub static ref SITE_NAMES: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
-    pub static ref SITE_PLATFORMS: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
-    pub static ref SITE_UP_URLS: Arc<RwLock<HashMap<String, String>>> = Arc::new(RwLock::new(HashMap::new()));
+    pub static ref SITE_STATIC_URLS: Arc<RwLock<HashMap<String, String>>> =
+        Arc::new(RwLock::new(HashMap::new()));
+    pub static ref SITE_PGSQL_STRINGS: Arc<RwLock<HashMap<String, String>>> =
+        Arc::new(RwLock::new(HashMap::new()));
+    pub static ref SITE_REDIS_STRINGS: Arc<RwLock<HashMap<String, String>>> =
+        Arc::new(RwLock::new(HashMap::new()));
+    pub static ref SITE_REDIS_CLUSTER: Arc<RwLock<HashMap<String, String>>> =
+        Arc::new(RwLock::new(HashMap::new()));
+    pub static ref SITE_KAFKA_STRINGS: Arc<RwLock<HashMap<String, String>>> =
+        Arc::new(RwLock::new(HashMap::new()));
+    pub static ref SITE_NAMES: Arc<RwLock<HashMap<String, String>>> =
+        Arc::new(RwLock::new(HashMap::new()));
+    pub static ref SITE_PLATFORMS: Arc<RwLock<HashMap<String, String>>> =
+        Arc::new(RwLock::new(HashMap::new()));
+    pub static ref SITE_UP_URLS: Arc<RwLock<HashMap<String, String>>> =
+        Arc::new(RwLock::new(HashMap::new()));
 }
 
 // 加载配置文件
@@ -53,9 +61,12 @@ pub struct Config {
 
 /// 设置配置内容
 pub async fn load_all(conn_string: &str) {
-
     let db = clients::pg::get(conn_string).await;
-    let platforms: Vec<Platform> = sqlx::query_as("select id, name from platforms where status = 1").fetch_all(&db).await.unwrap();
+    let platforms: Vec<Platform> =
+        sqlx::query_as("select id, name from platforms where status = 1")
+            .fetch_all(&db)
+            .await
+            .unwrap();
 
     let mut site_static_urls = SITE_STATIC_URLS.write().unwrap();
     let mut site_pgsql_strings = SITE_PGSQL_STRINGS.write().unwrap();
@@ -76,7 +87,6 @@ pub async fn load_all(conn_string: &str) {
             .await
             .unwrap();
         for site in sites {
-
             let code = site.code.clone();
             site_platforms.insert(code.clone(), platform.name.clone());
             site_names.insert(code.clone(), site.name.clone());
@@ -100,7 +110,7 @@ pub async fn load_all(conn_string: &str) {
                     site_static_urls.insert(code.clone(), config.value.clone());
                 } else if config.name == "up_url" {
                     site_up_urls.insert(code.clone(), config.value.clone());
-                } 
+                }
             }
         }
     }

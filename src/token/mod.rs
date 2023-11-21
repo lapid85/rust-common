@@ -1,8 +1,8 @@
-use serde::{Serialize, Deserialize};
-use jsonwebtoken::{encode, decode, Header, Validation, EncodingKey, DecodingKey};
-use log::error;
 use crate::utils::dt;
 use actix_web::HttpRequest;
+use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
+use log::error;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Mutex;
 
@@ -22,12 +22,12 @@ pub struct Token {
 }
 
 /// 检查token是否过期
-pub fn start() { 
+pub fn start() {
     let expire_secs = tokio::time::Duration::from_secs(5); // 每5秒钟检查一次过期token
     tokio::task::spawn(async move {
         loop {
             tokio::time::sleep(expire_secs).await;
-            let Ok(mut tokens) = USER_TOKENS.lock() else { 
+            let Ok(mut tokens) = USER_TOKENS.lock() else {
                 error!("get token lock error");
                 continue;
             };
@@ -47,7 +47,7 @@ pub fn start() {
 
 /// 添加token
 pub fn add(token: &str, timestamp: i64) {
-    let Ok(mut tokens) = USER_TOKENS.lock() else { 
+    let Ok(mut tokens) = USER_TOKENS.lock() else {
         error!("get token lock error");
         return;
     };
@@ -56,7 +56,7 @@ pub fn add(token: &str, timestamp: i64) {
 
 /// 刷新token
 pub fn refresh(token_old: &str, token_new: &str) {
-    let Ok(mut tokens) = USER_TOKENS.lock() else { 
+    let Ok(mut tokens) = USER_TOKENS.lock() else {
         error!("get token lock error");
         return;
     };
@@ -104,7 +104,11 @@ pub fn new_claims(id: i32, username: &String, ip: &String) -> Claims {
 /// 得到token
 #[inline]
 pub fn get_token(info: &Claims) -> Result<String, String> {
-    match encode(&Header::default(), &info, &EncodingKey::from_secret(TOKEN_SECRET.as_ref())) {
+    match encode(
+        &Header::default(),
+        &info,
+        &EncodingKey::from_secret(TOKEN_SECRET.as_ref()),
+    ) {
         Ok(t) => Ok(t),
         Err(_) => Err("get token error".to_owned()),
     }
@@ -113,7 +117,11 @@ pub fn get_token(info: &Claims) -> Result<String, String> {
 /// 检测token
 #[inline]
 pub fn get_claims(token: &str) -> Result<Claims, String> {
-    let token_data = match decode::<Claims>(token, &DecodingKey::from_secret(TOKEN_SECRET.as_ref()), &Validation::default()) {
+    let token_data = match decode::<Claims>(
+        token,
+        &DecodingKey::from_secret(TOKEN_SECRET.as_ref()),
+        &Validation::default(),
+    ) {
         Ok(c) => c,
         Err(err) => {
             error!("check token error: {}", err);
@@ -128,11 +136,11 @@ pub fn get_claims(token: &str) -> Result<Claims, String> {
 pub fn get_claims_by_request(req: &HttpRequest) -> Result<Claims, String> {
     let token_str = match match req.headers().get("Authorization") {
         Some(v) => v.to_str(),
-        None => { 
+        None => {
             error!("get token from request error");
             return Err("get token from request error".to_owned());
         }
-    }  {
+    } {
         Ok(v) => v,
         Err(err) => {
             error!("get token from request error: {}", err);

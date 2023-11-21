@@ -4,25 +4,25 @@ use std::string::ToString;
 
 #[derive(Debug)]
 pub struct Cond {
-    pub fields: Vec<String>, // 存储 AND 条件
+    pub fields: Vec<String>,    // 存储 AND 条件
     pub operators: Vec<String>, // 存储操作符
-    page_size: Option<i32>, // 存储 LIMIT 条件
-    page: Option<i32>,  // 存储分页条件
+    page_size: Option<i32>,     // 存储 LIMIT 条件
+    page: Option<i32>,          // 存储分页条件
     order_sort: Option<String>, // 存储 ORDER BY 子句
-    pub args: Vec<Val>, // 存储参数
-    pub arg_count: i32, // 存储参数个数
+    pub args: Vec<Val>,         // 存储参数
+    pub arg_count: i32,         // 存储参数个数
 }
 
 impl Cond {
     pub fn new() -> Self {
         Cond {
-            fields: vec![], // 存储 AND 条件
+            fields: vec![],    // 存储 AND 条件
             operators: vec![], // 存储操作符
-            args : vec![], // 存储参数
-            page_size: None, // 存储 LIMIT 条件
-            page: None,  // 存储分页条件
-            order_sort: None, // 存储 ORDER BY 子句
-            arg_count: 0, // 存储参数个数
+            args: vec![],      // 存储参数
+            page_size: None,   // 存储 LIMIT 条件
+            page: None,        // 存储分页条件
+            order_sort: None,  // 存储 ORDER BY 子句
+            arg_count: 0,      // 存储参数个数
         }
     }
 
@@ -31,13 +31,27 @@ impl Cond {
         let mut cond = Cond::new();
         for (field, operator, value) in array.iter() {
             match operator {
-                &"=" => { cond.eq(field, value); },
-                &">=" => { cond.ge(field, value); },
-                &"<=" => { cond.le(field, value); },
-                &">" => { cond.gt(field, value); },
-                &"<" => { cond.lt(field, value); },
-                &"LIKE" => { cond.like(field, value); },
-                _ => { cond.eq(field, value); },
+                &"=" => {
+                    cond.eq(field, value);
+                }
+                &">=" => {
+                    cond.ge(field, value);
+                }
+                &"<=" => {
+                    cond.le(field, value);
+                }
+                &">" => {
+                    cond.gt(field, value);
+                }
+                &"<" => {
+                    cond.lt(field, value);
+                }
+                &"LIKE" => {
+                    cond.like(field, value);
+                }
+                _ => {
+                    cond.eq(field, value);
+                }
             }
         }
         cond
@@ -51,8 +65,9 @@ impl Cond {
     /// 组合多个条件
     fn add_cond(&mut self, condition: &Cond, opera: &'static str) -> &mut Self {
         let field_count = condition.fields.len();
-        if field_count == 0 { // 如果没有参数，直接返回
-            return self
+        if field_count == 0 {
+            // 如果没有参数，直接返回
+            return self;
         }
         let field_max = field_count - 1;
         for i in 0..field_count {
@@ -62,16 +77,20 @@ impl Cond {
             self.arg_count += 1;
             if i == 0 && field_max == 0 {
                 self.fields.push(format!("{} ({}", opera, field));
-                self.operators.push(format!("{} ${})", op_arr[0], self.arg_count));
+                self.operators
+                    .push(format!("{} ${})", op_arr[0], self.arg_count));
             } else if i == 0 && field_max > 0 {
                 self.fields.push(format!("{} ({}", opera, field));
-                self.operators.push(format!("{} ${}", op_arr[0], self.arg_count));
+                self.operators
+                    .push(format!("{} ${}", op_arr[0], self.arg_count));
             } else if i > 0 && i == field_max {
                 self.fields.push(field.to_owned());
-                self.operators.push(format!("{} ${})", op_arr[0], self.arg_count));
+                self.operators
+                    .push(format!("{} ${})", op_arr[0], self.arg_count));
             } else if i > 0 && i < field_max {
                 self.fields.push(field.to_owned());
-                self.operators.push(format!("{} ${}", op_arr[0], self.arg_count));
+                self.operators
+                    .push(format!("{} ${}", op_arr[0], self.arg_count));
             }
             let arg = &condition.args[i];
             self.args.push(arg.clone());
@@ -91,7 +110,7 @@ impl Cond {
 
     /// 用于 = 查询
     pub fn eq(&mut self, column: &'static str, value: &Val) -> &mut Self {
-        self.arg_count += 1 ;
+        self.arg_count += 1;
         self.fields.push(column.to_owned());
         self.operators.push(format!("= ${}", self.arg_count));
         self.args.push(value.clone());
@@ -100,7 +119,7 @@ impl Cond {
 
     /// 用于 >= 查询
     pub fn ge(&mut self, column: &'static str, value: &Val) -> &mut Self {
-        self.arg_count += 1 ;
+        self.arg_count += 1;
         self.fields.push(column.to_owned());
         self.operators.push(format!(">= ${}", self.arg_count));
         self.args.push(value.clone());
@@ -109,7 +128,7 @@ impl Cond {
 
     /// 用于 <= 查询
     pub fn le(&mut self, column: &'static str, value: &Val) -> &mut Self {
-        self.arg_count += 1 ;
+        self.arg_count += 1;
         self.fields.push(column.to_owned());
         self.operators.push(format!("<= ${}", self.arg_count));
         self.args.push(value.clone());
@@ -118,7 +137,7 @@ impl Cond {
 
     /// 用于 > 查询
     pub fn gt(&mut self, column: &'static str, value: &Val) -> &mut Self {
-        self.arg_count += 1 ;
+        self.arg_count += 1;
         self.fields.push(column.to_owned());
         self.operators.push(format!("> ${}", self.arg_count));
         self.args.push(value.clone());
@@ -127,7 +146,7 @@ impl Cond {
 
     /// 用于 < 查询
     pub fn lt(&mut self, column: &'static str, value: &Val) -> &mut Self {
-        self.arg_count += 1 ;
+        self.arg_count += 1;
         self.fields.push(column.to_owned());
         self.operators.push(format!("< ${}", self.arg_count));
         self.args.push(value.clone());
@@ -136,12 +155,12 @@ impl Cond {
 
     /// 用于 BETWEEN 查询
     pub fn between(&mut self, column: &'static str, min: &Val, max: &Val) -> &mut Self {
-        self.arg_count += 1 ;
+        self.arg_count += 1;
         self.fields.push(format!("({}", column));
         self.operators.push(format!("> ${}", self.arg_count));
         self.args.push(min.clone());
 
-        self.arg_count += 1 ;
+        self.arg_count += 1;
         self.fields.push(column.to_owned());
         self.operators.push(format!("< ${})", self.arg_count));
         self.args.push(max.clone());
@@ -150,7 +169,7 @@ impl Cond {
 
     /// 用于模糊查询
     pub fn like(&mut self, column: &'static str, pattern: &Val) -> &mut Self {
-        self.arg_count += 1 ;
+        self.arg_count += 1;
         self.fields.push(column.to_owned());
         self.operators.push(format!("LIKE ${}", self.arg_count));
         self.args.push(pattern.clone());
@@ -171,7 +190,7 @@ impl Cond {
 
     /// 用于分页查询
     pub fn page(&mut self, page: i32) -> &mut Self {
-        self.page= Some(page);
+        self.page = Some(page);
         self
     }
 
@@ -184,13 +203,13 @@ impl Cond {
             for i in 0..field_count {
                 let operator = &self.operators[i]; // 操作符
                 let field = &self.fields[i]; // 字段
-                if i > 0  {
+                if i > 0 {
                     if !field.starts_with("AND") && !field.starts_with("OR") {
                         query.push_str(" AND ");
                     } else {
                         query.push_str(" ");
                     }
-                }                 
+                }
                 let sql = format!("{} {}", field, operator);
                 query.push_str(&sql);
             }
@@ -211,7 +230,7 @@ impl Cond {
 
         if let Some(limit) = self.page_size {
             page_size = limit;
-            if let Some(page_current) = self.page{
+            if let Some(page_current) = self.page {
                 page = page_current;
             }
         }

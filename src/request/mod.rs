@@ -1,5 +1,5 @@
+use crate::consts::{AUTHORIZATION, PLATFORM_SYSTEM};
 use actix_web::HttpRequest;
-use crate::consts::{PLATFORM_SYSTEM, AUTHORIZATION};
 
 /// 获取ip
 const IP_HEADERS: [&'static str; 7] = [
@@ -80,7 +80,8 @@ pub fn get_site_code(req: &HttpRequest) -> String {
     }
 
     let path = req.path();
-    if path.contains("/plat/") { // 如果包含 /plat/ 则为平台
+    if path.contains("/plat/") {
+        // 如果包含 /plat/ 则为平台
         return PLATFORM_SYSTEM.to_owned();
     }
 
@@ -103,10 +104,10 @@ pub fn client_ip(req: &HttpRequest) -> Option<String> {
 /// 获取token
 pub fn get_token_str<'a>(req: &'a HttpRequest) -> Result<&'a str, &'static str> {
     let headers = req.headers();
-    let Some(token_val) = headers.get(AUTHORIZATION) else { 
+    let Some(token_val) = headers.get(AUTHORIZATION) else {
         return Err("get token error");
     };
-    let Ok(token_str) = token_val.to_str() else { 
+    let Ok(token_str) = token_val.to_str() else {
         return Err("get token error");
     };
     Ok(token_str)

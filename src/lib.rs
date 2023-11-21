@@ -5,14 +5,14 @@ extern crate lazy_static;
 pub mod clients;
 pub mod config;
 pub mod consts;
+pub mod logger;
 pub mod mvc;
+pub mod request;
 pub mod response;
 pub mod tables;
+pub mod token;
 pub mod types;
 pub mod utils;
-pub mod request;
-pub mod logger;
-pub mod token;
 #[macro_use]
 pub mod i18n;
 

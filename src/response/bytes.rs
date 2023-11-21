@@ -1,7 +1,7 @@
+use super::{JsonError, JsonOK, JsonOKMsg, JsonResult};
 use actix_web::HttpResponse;
 use serde::ser;
 use serde_cbor::to_vec;
-use super::{JsonOK, JsonOKMsg, JsonError, JsonResult};
 
 /// 处理转换 cbor
 #[inline]
@@ -51,4 +51,3 @@ pub fn cbor_result<T: ser::Serialize>(result: &T) -> HttpResponse {
         data: result,
     })
 }
-

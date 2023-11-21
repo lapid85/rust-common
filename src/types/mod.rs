@@ -14,7 +14,6 @@ pub const STATUS_ENABLE: Val = Val::I16(crate::consts::STATUS_DISABLE);
 /// 状态：禁用
 pub const STATUS_DISABLE: Val = Val::I16(crate::consts::STATUS_DISABLE);
 
-
 /// 数据库连接池
 pub type Db = pg::Pool;
 pub type Conn = pg::Conn;
@@ -32,6 +31,6 @@ pub mod pager;
 pub mod pagination;
 pub mod search;
 
+pub use pager::Pager;
 pub use pagination::Pagination;
 pub use search::Search;
-pub use pager::Pager;

@@ -1,6 +1,6 @@
-use actix_web::HttpRequest;
-use crate::consts;
 use super::Cond;
+use crate::consts;
+use actix_web::HttpRequest;
 
 pub trait Pagination {
     /// 获取分页参数
@@ -10,7 +10,7 @@ pub trait Pagination {
 
         let query_str = req.query_string().trim();
         let arr = query_str.split("&").collect::<Vec<&str>>();
-        if arr.len() == 0 { 
+        if arr.len() == 0 {
             return (page, page_size);
         }
         for item in &arr {

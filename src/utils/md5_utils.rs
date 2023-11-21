@@ -23,7 +23,10 @@ pub fn str_with(content: &str, key: &str) -> String {
 }
 
 // 对用户名、密码、时间戳进行 md5 加密
-pub fn password(username: &String, password: &String, timestamp: &i64) -> String { 
-    let encrypt = md5::compute(format!("{}{}{}{}", username, password, timestamp, SECRET_KEYS));
+pub fn password(username: &String, password: &String, timestamp: &i64) -> String {
+    let encrypt = md5::compute(format!(
+        "{}{}{}{}",
+        username, password, timestamp, SECRET_KEYS
+    ));
     format!("{:x}", encrypt)
 }

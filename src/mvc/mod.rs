@@ -2,6 +2,7 @@ use crate::tables::table_info;
 use crate::types::pg::Pool;
 use crate::utils::strings;
 use std::fs;
+use std::process::Command;
 
 /// 获取结构体字段类型
 pub fn get_struct_field_type(table_name: &String, field_type: &str) -> &'static str {
@@ -21,9 +22,9 @@ pub fn get_struct_field_type(table_name: &String, field_type: &str) -> &'static 
                 "chrono::NaiveDateTime"
             } else if v.contains("timestamp with time zone") {
                 "chrono::DateTime<chrono::Utc>"
-            } else if v.contains("decimal") { 
+            } else if v.contains("decimal") {
                 "f64"
-            } else if v.contains("numeric") { 
+            } else if v.contains("numeric") {
                 "rust_decimal::Decimal"
             } else {
                 panic!("未知类型: {} - {}", table_name, v);
@@ -58,7 +59,10 @@ pub async fn create_tables(pool: &Pool) {
         // use sqlx::FromRow;
         // use std::fmt::Debug;
         // #[derive(Serialize, Deserialize, Debug, FromRow, Default, CRUDTable, Clone)]
-        struct_str.push_str(&format!("//! 表名: {} - 本文档为脚本自动生成,每次生成都会被自动覆盖,请不要修改 \n\n", table.name.as_str()));
+        struct_str.push_str(&format!(
+            "//! 表名: {} - 本文档为脚本自动生成,每次生成都会被自动覆盖,请不要修改 \n\n",
+            table.name.as_str()
+        ));
         struct_str.push_str("use crud_derive::CRUDTable;\n");
         struct_str.push_str("use serde::{Deserialize, Serialize};\n");
         struct_str.push_str("use sqlx::FromRow;\n");
@@ -79,10 +83,13 @@ pub async fn create_tables(pool: &Pool) {
             let field_comment = field.comment.unwrap_or("".to_string());
             if field_type.contains("rust_decimal") {
                 struct_str.push_str("    /// 参考 [`rust_decimal::Decimal`]\n");
-            } else if field.field_type == "date" { 
+            } else if field.field_type == "date" {
                 struct_str.push_str("    /// 参考 [`chrono::NaiveDate`]\n");
             }
-            struct_str.push_str(&format!("    pub {}: {}, // {} - {}\n", field_name, field_type, field_comment, field.field_type));
+            struct_str.push_str(&format!(
+                "    pub {}: {}, // {} - {}\n",
+                field_name, field_type, field_comment, field.field_type
+            ));
         }
         struct_str.push_str("}\n");
         structs.push_str(&format!("pub mod {};\n", table.name)); // 创建 mod.rs
@@ -90,7 +97,13 @@ pub async fn create_tables(pool: &Pool) {
 
         let mut file_path = current_dir.clone();
         file_path.push(format!("{}.rs", table.name));
-        fs::write(file_path, &struct_str).expect("Unable to write file");
+        fs::write(&file_path, &struct_str).expect("Unable to write file");
+        Command::new("rustfmt")
+            .arg("--edition")
+            .arg("2021")
+            .arg(file_path.to_str().unwrap())
+            .output()
+            .expect("rustfmt failed to start");
 
         println!("====>> creating struct: {}", table.name);
         println!("{}\n", struct_str);
@@ -100,5 +113,11 @@ pub async fn create_tables(pool: &Pool) {
     structs.push_str("\npub mod ext;\n");
     let mut mod_file = current_dir.clone();
     mod_file.push("mod.rs");
-    fs::write(mod_file, structs).expect("Unable to write file");
+    fs::write(&mod_file, structs).expect("Unable to write file");
+    Command::new("rustfmt")
+        .arg("--edition")
+        .arg("2021")
+        .arg(mod_file.to_str().unwrap())
+        .output()
+        .expect("rustfmt failed to start");
 }
