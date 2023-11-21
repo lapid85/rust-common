@@ -81,7 +81,7 @@ pub fn get_site_code(req: &HttpRequest) -> String {
 
     let path = req.path();
     if path.contains("/plat/") { // 如果包含 /plat/ 则为平台
-        return PLATFORM_SYSTEM.to_string();
+        return PLATFORM_SYSTEM.to_owned();
     }
 
     "AK".to_owned()
@@ -93,7 +93,7 @@ pub fn client_ip(req: &HttpRequest) -> Option<String> {
     for h in IP_HEADERS {
         if let Some(ip) = headers.get(h) {
             let ip = ip.to_str().unwrap();
-            return Some(ip.to_string());
+            return Some(ip.to_owned());
         }
     }
 
