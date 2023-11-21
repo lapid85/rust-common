@@ -6,14 +6,14 @@ use log::{debug, error};
 
 pub struct Locker {
     pub redis: redis::Client,
-    pub lock_key: &'static str,
+    pub lock_key: String,
 }
 
 impl Locker {
     /// 获取分布式锁
     pub async fn lock_by_request(
         req: &HttpRequest,
-        cache_key: &'static str,
+        cache_key: String,
     ) -> Result<Self, &'static str> {
         use redis::AsyncCommands;
 
@@ -26,7 +26,7 @@ impl Locker {
             return Err("errGetRedisConnection");
         };
 
-        let Ok(val) = rd_conn.incr::<&'static str, i32, i32>(cache_key, 1).await else {
+        let Ok(val) = rd_conn.incr::<&String, i32, i32>(&cache_key, 1).await else {
             return Err("errIncrRedisKey");
         };
 
@@ -41,14 +41,14 @@ impl Locker {
     }
 
     /// 获取分布式锁
-    pub async fn lock_by_rd(rd: &Rd, cache_key: &'static str) -> Result<Self, &'static str> {
+    pub async fn lock_by_rd(rd: &Rd, cache_key: String) -> Result<Self, &'static str> {
         use redis::AsyncCommands;
 
         let Ok(mut rd_conn) = rd.get_async_connection().await else {
             return Err("errGetRedisConnection");
         };
 
-        let Ok(val) = rd_conn.incr::<&'static str, i32, i32>(cache_key, 1).await else {
+        let Ok(val) = rd_conn.incr::<&String, i32, i32>(&cache_key, 1).await else {
             return Err("errIncrRedisKey");
         };
 
@@ -74,7 +74,7 @@ impl Drop for Locker {
             }
         };
 
-        let result = rd_conn.del::<&'static str, i32>(self.lock_key);
+        let result = rd_conn.del::<&String, i32>(&self.lock_key);
         debug!("释放分布式锁: {:?}", result);
     }
 }
