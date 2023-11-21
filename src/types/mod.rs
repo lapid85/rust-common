@@ -1,11 +1,19 @@
+use serde::{Deserialize, Serialize};
+use sqlx::FromRow;
+
 pub mod cond;
 pub mod pg;
 pub mod rd;
 pub mod req;
 
+#[derive(Debug, Serialize, Deserialize, FromRow)]
+pub struct IdName {
+    pub id: i32,
+    pub name: String,
+}
+
 /// 查询条件
 pub use cond::Cond;
-
 /// 值
 pub type Val = pg::Val;
 
