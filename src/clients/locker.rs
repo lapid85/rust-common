@@ -46,7 +46,7 @@ pub async fn lock_by_request<'a, T: std::fmt::Display>(
 pub async fn lock_by_rd<'a, T: std::fmt::Display>(
     rd: &'a Rd,
     path: &'static str,
-    ext_info: &T,
+    ext_info: &'a T,
 ) -> Result<Locker<'a>, &'static str> {
     use redis::AsyncCommands;
 

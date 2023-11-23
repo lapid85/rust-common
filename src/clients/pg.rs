@@ -1,6 +1,7 @@
 use crate::config::SITE_PGSQL_STRINGS;
 use crate::consts;
 use crate::types::{Db, PoolOptions};
+use log::error;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
@@ -31,40 +32,38 @@ pub async fn set(site: &str, conn_string: &str) {
 }
 
 /// 得到数据库连接池 - 通过站点
-pub async fn get_by_site(site: &str) -> Result<Db, String> {
-    match SERVERS.read() {
-        Ok(read_servers) => {
-            if let Some(server) = read_servers.get(site) {
-                return Ok(server.clone());
-            }
+pub async fn get_by_site(site: &str) -> Result<Db, &'static str> {
+    {
+        let Ok(read_servers) = SERVERS.read() else {
+            return Err("Error: get SERVERS lock");
+        };
+        if let Some(server) = read_servers.get(site) {
+            error!("get server from SERVERS read()");
+            return Ok(server.clone());
         }
-        Err(err) => {
-            return Err(format!("Error: get SERVERS lock {:?}", err));
-        }
-    };
-
+    }
     // 从配置文件中读取
     let Ok(server_string) = SITE_PGSQL_STRINGS.read() else {
-        return Err("Error: get SITE_PGSQL_STRINGS lock".to_owned());
+        return Err("Error: get SITE_PGSQL_STRINGS lock");
     };
     let Some(conn_string) = server_string.get(site) else {
-        return Err(format!("Error: get conn string by site '{}'", site));
+        error!("Error: get conn string by site");
+        return Err("Error: get conn string by site");
     };
-    match SERVERS.write() {
-        Ok(mut servers) => {
-            let server = get(conn_string).await;
-            (*servers).insert(site.to_owned(), server.clone());
-            return Ok(server);
-        }
-        Err(err) => {
-            return Err(format!("Error: get SERVERS lock {:?}", err));
-        }
-    };
+    {
+        let Ok(mut servers) = SERVERS.write() else {
+            error!("Error: get SERVERS lock");
+            return Err("Error: get SERVERS lock");
+        };
+        let server = get(conn_string).await;
+        (*servers).insert(site.to_owned(), server.clone());
+        return Ok(server);
+    }
 }
 
 /// 得到数据库连接池 - 通过请求
 #[inline]
-pub async fn get_by_request(req: &actix_web::HttpRequest) -> Result<Db, String> {
+pub async fn get_by_request(req: &actix_web::HttpRequest) -> Result<Db, &'static str> {
     let site = crate::request::get_site_code(req);
     get_by_site(&site).await
 }
