@@ -8,7 +8,7 @@ pub const RD_PORT: u32 = 6379;
 pub const RD_AUTH: &'static str = "";
 
 /// 用户redis前缀
-pub const USER_REDIS_PREFIX: &'static str = "user:id:";
+pub const USER_REDIS_PREFIX: &'static str = "pro:user:id:";
 
 /// 用户redis前缀
-pub const USER_REDIS_USER_PREFIX: &'static str = "user:name:";
+pub const USER_REDIS_USER_PREFIX: &'static str = "pro:user:name:";
