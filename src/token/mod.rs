@@ -116,7 +116,7 @@ pub fn get_token(info: &Claims) -> Result<String, String> {
 
 /// 检测token
 #[inline]
-pub fn get_claims(token: &str) -> Result<Claims, String> {
+pub fn get_claims(token: &str) -> Result<Claims, &'static str> {
     let token_data = match decode::<Claims>(
         token,
         &DecodingKey::from_secret(TOKEN_SECRET.as_ref()),
@@ -125,7 +125,7 @@ pub fn get_claims(token: &str) -> Result<Claims, String> {
         Ok(c) => c,
         Err(err) => {
             error!("check token error: {}", err);
-            return Err("check token error".to_owned());
+            return Err("check token error");
         }
     };
     Ok(token_data.claims)
@@ -133,18 +133,18 @@ pub fn get_claims(token: &str) -> Result<Claims, String> {
 
 /// 检测token
 #[inline]
-pub fn get_claims_by_request(req: &HttpRequest) -> Result<Claims, String> {
+pub fn get_claims_by_request(req: &HttpRequest) -> Result<Claims, &'static str> {
     let token_str = match match req.headers().get("Authorization") {
         Some(v) => v.to_str(),
         None => {
             error!("get token from request error");
-            return Err("get token from request error".to_owned());
+            return Err("get token from request error");
         }
     } {
         Ok(v) => v,
         Err(err) => {
             error!("get token from request error: {}", err);
-            return Err("get token from request error".to_owned());
+            return Err("get token from request error");
         }
     };
     get_claims(&token_str)

@@ -21,6 +21,8 @@ pub const RESOURCE_KIND_DEFAULT: i32 = 1001;
 pub const RESOURCE_KIND_BEGIN: i32 = 1006;
 /// 资源类型：每个用户最多允许添加分类数量
 pub const RESOURCE_KIND_MAX_PER_USER: i64 = 128;
+/// 资源：每个用户最多允许添加资源数量
+pub const RESOURCE_MAX_PER_USER: i64 = 1024;
 
 /// 状态：启用
 pub const STATUS_ENABLE: i16 = 1;
