@@ -24,6 +24,32 @@ pub const RESOURCE_KIND_MAX_PER_USER: i64 = 128;
 /// 资源：每个用户最多允许添加资源数量
 pub const RESOURCE_MAX_PER_USER: i64 = 1024;
 
+// 10: 待审核 20: 处理中 30: 已完成 40: 已取消 50: 挂起(表示任务完成一部分钱不够了) 60: 已拒绝
+pub const TASK_STATUS_DEFAULT: i16 = 10;
+pub const TASK_STATUS_PROCESSING: i16 = 20;
+pub const TASK_STATUS_COMPLETED: i16 = 30;
+pub const TASK_STATUS_CANCELED: i16 = 40;
+pub const TASK_STATUS_SUSPENDED: i16 = 50;
+pub const TASK_STATUS_REJECTED: i16 = 60;
+// 10: 免担保 20: 担保任务
+pub const TASK_ENSURE_TYPE_DEFAULT: i16 = 10;
+pub const TASK_ENSURE_TYPE_GUARANTEE: i16 = 20;
+// 0: 个人任务 1: 团队任务
+pub const TASK_TEAM_TYPE_NO: i16 = 0;
+pub const TASK_TEAM_TYPE_YES: i16 = 1;
+// 0: 固定佣金 1: 比例佣金
+pub const TASK_COMMISSION_TYPE_FIXED: i16 = 0;
+pub const TASK_COMMISSION_TYPE_RATIO: i16 = 1;
+// 0: 有时间限制 1: 无时间限制
+pub const TASK_TIME_LIMIT_NO: i16 = 0;
+pub const TASK_TIME_LIMIT_YES: i16 = 1;
+// 0: 不允许同IP领取 1: 允许同IP领取
+pub const TASK_IP_LIMIT_NO: i16 = 0;
+pub const TASK_IP_LIMIT_YES: i16 = 1;
+// 0: 不允许直接领取 1: 允许直接领取
+pub const TASK_DIRECT_LIMIT_NO: i16 = 0;
+pub const TASK_DIRECT_LIMIT_YES: i16 = 1;
+
 /// 状态：启用
 pub const STATUS_ENABLE: i16 = 1;
 /// 状态：禁用
