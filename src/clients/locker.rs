@@ -3,67 +3,73 @@ use crate::request;
 use crate::types::Rd;
 use actix_web::HttpRequest;
 use log::{debug, error};
+use std::borrow::Cow;
 
-pub struct Locker {
-    pub redis: redis::Client,
+pub struct Locker<'a> {
+    pub redis: Cow<'a, redis::Client>,
     pub lock_key: String,
 }
 
-impl Locker {
-    /// 获取分布式锁
-    pub async fn lock_by_request(
-        req: &HttpRequest,
-        cache_key: String,
-    ) -> Result<Self, &'static str> {
-        use redis::AsyncCommands;
+/// 获取分布式锁
+pub async fn lock_by_request<'a, T: std::fmt::Display>(
+    req: &'a HttpRequest,
+    path: &'static str,
+    ext_info: &'a T,
+) -> Result<Locker<'a>, &'static str> {
+    use redis::AsyncCommands;
 
-        let site_code = request::get_site_code(req);
-        let Ok(client) = rd::get_by_site(&site_code).await else {
-            return Err("errGetRedisClient");
-        };
+    let site_code = request::get_site_code(req);
+    let Ok(client) = rd::get_by_site(&site_code).await else {
+        return Err("errGetRedisClient");
+    };
 
-        let Ok(mut rd_conn) = client.get_async_connection().await else {
-            return Err("errGetRedisConnection");
-        };
+    let Ok(mut rd_conn) = client.get_async_connection().await else {
+        return Err("errGetRedisConnection");
+    };
 
-        let Ok(val) = rd_conn.incr::<&String, i32, i32>(&cache_key, 1).await else {
-            return Err("errIncrRedisKey");
-        };
+    let cache_key = format!("{}:{}", path, ext_info);
+    let Ok(val) = rd_conn.incr::<&String, i32, i32>(&cache_key, 1).await else {
+        return Err("errIncrRedisKey");
+    };
 
-        if val > 1 {
-            return Err("errLock");
-        }
-
-        Ok(Self {
-            redis: client,
-            lock_key: cache_key,
-        })
+    if val > 1 {
+        return Err("errLock");
     }
 
-    /// 获取分布式锁
-    pub async fn lock_by_rd(rd: &Rd, cache_key: String) -> Result<Self, &'static str> {
-        use redis::AsyncCommands;
-
-        let Ok(mut rd_conn) = rd.get_async_connection().await else {
-            return Err("errGetRedisConnection");
-        };
-
-        let Ok(val) = rd_conn.incr::<&String, i32, i32>(&cache_key, 1).await else {
-            return Err("errIncrRedisKey");
-        };
-
-        if val > 1 {
-            return Err("errLock");
-        }
-
-        Ok(Self {
-            redis: rd.clone(),
-            lock_key: cache_key,
-        })
-    }
+    Ok(Locker {
+        redis: Cow::Owned(client),
+        lock_key: cache_key,
+    })
 }
 
-impl Drop for Locker {
+/// 获取分布式锁
+pub async fn lock_by_rd<'a, T: std::fmt::Display>(
+    rd: &'a Rd,
+    path: &'static str,
+    ext_info: &T,
+) -> Result<Locker<'a>, &'static str> {
+    use redis::AsyncCommands;
+
+    let Ok(mut rd_conn) = rd.get_async_connection().await else {
+        return Err("errGetRedisConnection");
+    };
+
+    let cache_key = format!("{}:{}", path, ext_info);
+    let Ok(val) = rd_conn.incr::<&String, i32, i32>(&cache_key, 1).await else {
+        return Err("errIncrRedisKey");
+    };
+
+    if val > 1 {
+        return Err("errLock");
+    }
+
+    Ok(Locker {
+        redis: Cow::Borrowed(rd),
+        lock_key: cache_key,
+    })
+}
+
+impl<'a> Drop for Locker<'a> {
     fn drop(&mut self) {
         use redis::Commands;
         let mut rd_conn = match self.redis.get_connection() {
