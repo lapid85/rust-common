@@ -38,7 +38,6 @@ pub async fn get_by_site(site: &str) -> Result<Db, &'static str> {
             return Err("Error: get SERVERS lock");
         };
         if let Some(server) = read_servers.get(site) {
-            error!("get server from SERVERS read()");
             return Ok(server.clone());
         }
     }
